@@ -45,14 +45,7 @@ py -m http.server 8000
 
 En Mac o Linux es `python3 -m http.server 8000`. Después entrá a http://localhost:8000.
 
-## Publicarlo con GitHub Pages
 
-1. En github.com, tocá **New repository**, ponele un nombre (por ejemplo `lo-recuerdo-todo-rojo-azul-y-verde`), elegí **Public** y creá el repositorio.
-2. En el repositorio vacío, tocá **uploading an existing file** y arrastrá **todo el contenido** de esta carpeta, no la carpeta en sí. `index.html` tiene que quedar en la raíz. Tocá **Commit changes**.
-3. Andá a **Settings → Pages**. En **Source** elegí **Deploy from a branch**, en **Branch** elegí `main` y `/ (root)`, y guardá.
-4. Uno o dos minutos después, el sitio está en `https://TU-USUARIO.github.io/NOMBRE-DEL-REPOSITORIO/`.
-
-Para actualizarlo, subí los archivos cambiados de la misma forma (**Add file → Upload files**). Pages se actualiza solo.
 
 ## Créditos y licencias
 
