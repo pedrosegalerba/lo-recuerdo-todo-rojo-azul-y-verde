@@ -286,7 +286,7 @@ button[aria-pressed="true"]{background:rgba(255,255,255,.2)}
 const LISTA = [
   { tipo: "video", key: "0016",  titulo: "Vídeo0016" },
   { tipo: "video", key: "0018",  titulo: "Vídeo0018",
-    texto: "Nunca me divirtió mucho pescar, pero siempre acompañaba. Fermín era el que más pescaba, sin duda. Yo me aburría y caminaba o filmaba con el celular de mi papá. Hay algo que me atormenta de este video: un hombre, en 2 o 3 frames, que pesca pacientemente. No logro descifrar si es mi papá o no. Pasé mucho tiempo sacando conclusiones, intentando acordarme, analizando la forma de esos pixeles, pero no tengo una respuesta aún." },
+    texto: "Nunca me divirtió mucho pescar, pero siempre acompañaba. Fermín era el que más pescaba, sin duda. Yo me aburría y caminaba o filmaba con el celular de mi papá." },
   { tipo: "video", key: "0029",  titulo: "Vídeo0029" },
   { tipo: "video", key: "0030",  titulo: "Vídeo0030" },
   { tipo: "video", key: "0031",  titulo: "Vídeo0031", 
@@ -674,14 +674,31 @@ const MURMULLO = {
   volumen: 0.07,     // volumen de cada video en el murmullo (0 a 1)
   foco: 0.55,        // volumen del video que está bajo el mouse
   filtro: 900,       // qué tan "lejano" suena el murmullo (Hz: más bajo = más apagado)
+  // en el celular el parlante casi no reproduce graves: el murmullo va más fuerte y menos apagado
+  volumenCelu: 0.2,
+  filtroCelu: 2200,
 };
+if (TACTIL) { MURMULLO.volumen = MURMULLO.volumenCelu; MURMULLO.filtro = MURMULLO.filtroCelu; }
 let audioCtx = null, master = null, focoSonido = -2;
 const pistas = [];
 function videoDeInicio(i) { return vidsCampo[i]; }
+// iPhone: sin esto, el sonido hecho con Web Audio se calla cuando el teléfono está en silencio
+function desbloquearAudioIOS() {
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  try {   // truco para iPhone viejos: un audio HTML mudo, iniciado con el toque, pasa el sonido a modo "reproducción"
+    const a = new Audio("data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA");
+    a.setAttribute("playsinline", ""); a.loop = true; a.play().catch(() => {});
+  } catch (e) {}
+}
+function reanudarAudio() { if (audioCtx && audioCtx.state !== "running") audioCtx.resume().catch(() => {}); }
+document.addEventListener("pointerdown", reanudarAudio, true);   // si el teléfono pausó el audio (llamada, bloqueo), vuelve con el próximo toque
+document.addEventListener("visibilitychange", () => { if (!document.hidden) reanudarAudio(); });
 function iniciarMurmullo() {
-  if (audioCtx) return;
+  if (audioCtx) { reanudarAudio(); return; }
+  if (TACTIL) desbloquearAudioIOS();
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    reanudarAudio();
     master = audioCtx.createGain(); master.gain.value = sonidoOn ? 1 : 0; master.connect(audioCtx.destination);
   } catch (e) { audioCtx = null; return; }
   if (TACTIL && EN_WEB) { cargarMurmulloTactil(); return; }
