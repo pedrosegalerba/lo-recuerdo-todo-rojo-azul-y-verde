@@ -1,0 +1,1369 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lo recuerdo todo rojo, azul y verde</title>
+<meta name="description" content="Nueve videos de un archivo familiar, convertidos en nubes de puntos recorribles. Pedro Segalerba, 2026.">
+<meta name="theme-color" content="#000000">
+<style>
+/* Redaction 50 (licencia OFL), guardada en la carpeta fonts: funciona sin internet */
+@font-face{font-family:"Redaction 50";src:url("fonts/redaction-50-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Redaction 50";src:url("fonts/redaction-50-latin-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Redaction 50";src:url("fonts/redaction-50-latin-700-normal.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Redaction 50";src:url("fonts/redaction-50-latin-700-italic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+/* ===== Ajustes visuales: cambiá estos valores ===== */
+:root{
+  --fondo:#000;            /* fondo de la página */
+  --fondo-visor:#000;      /* fondo detrás de la nube */
+  --texto:#e8e8e8;
+  --texto-suave:#8a8a8a;
+  --gc:#ffffff;            /* color del brillo: va cambiando al azar entre los colores de la portada */
+  --ancho:170px;           /* tamaño de cada recuadro */
+  --alto:140px;
+  --margen:32px;           /* misma distancia a los bordes para el rótulo y los íconos */
+  --velo:.12;
+  --fondo-blur:5px;        /* cuánto se desenfoca la nube de fondo del inicio */
+  --fondo-gris:1;          /* nube de fondo del inicio en blanco y negro (1 = blanco y negro, 0 = color) */
+  --fondo-luz:.85;         /* brillo de la nube de fondo del inicio */              /* oscuridad de la pantalla de inicio sobre la nube de fondo (0 = nada, 1 = negro) */
+  --fuente:"Redaction 50",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+@property --gc{syntax:"<color>";inherits:true;initial-value:#ffffff}
+/* el brillo se calcula en cada elemento que lo usa, así cada uno puede tener su propio color */
+:root,.cuadro,#etiqueta,#inicio,.icono,#aviso{
+  --glow:0 0 2px color-mix(in srgb,var(--gc) 50%,transparent),0 0 18px color-mix(in srgb,var(--gc) 30%,transparent),0 0 44px color-mix(in srgb,var(--gc) 13%,transparent);
+  --glow-hover:0 0 2px color-mix(in srgb,var(--gc) 80%,transparent),0 0 26px color-mix(in srgb,var(--gc) 50%,transparent),0 0 64px color-mix(in srgb,var(--gc) 22%,transparent);
+  transition:--gc 2.4s ease}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--fondo);color:var(--texto);font-family:var(--fuente);font-size:14px;-webkit-font-smoothing:antialiased}
+/* campo: los recuadros flotan repartidos por toda la pantalla */
+.grilla{position:fixed;inset:0;overflow:hidden}
+#campo{position:absolute;inset:0;width:100%;height:100%;display:block}
+#etiqueta{position:absolute;left:0;top:0;pointer-events:none;font-size:13px;color:var(--texto);background:rgba(0,0,0,.72);
+  border:1px solid rgba(255,255,255,.18);border-radius:3px;padding:6px 10px;white-space:nowrap;box-shadow:var(--glow)}
+.cuadro{all:unset;cursor:pointer;display:block;position:absolute;left:0;top:0;width:var(--ancho);height:var(--alto);will-change:transform}
+.cuadro .img{position:relative;width:100%;height:100%;border-radius:3px;overflow:hidden;box-shadow:var(--glow);background:#111;transition:transform .25s ease,box-shadow .25s ease}
+.cuadro:hover .img,.cuadro:focus-visible .img{box-shadow:var(--glow-hover)}
+.cuadro img{width:100%;height:100%;object-fit:cover;display:block}
+/* el video trae color a la izquierda y profundidad a la derecha: se muestra solo la mitad izquierda */
+.cuadro video{position:absolute;top:0;left:0;width:200%;height:100%;object-fit:fill;display:block}
+.cuadro span{position:absolute;left:0;top:100%;margin-top:8px;width:100%;font-size:11px;letter-spacing:.02em;color:var(--texto-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cuadro:hover .img,.cuadro:focus-visible .img{transform:translateY(-3px)}
+.cuadro:focus-visible .img{outline:1px solid var(--texto-suave);outline-offset:4px}
+
+/* Pantalla de inicio */
+#inicio{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:var(--margen);
+  background:radial-gradient(ellipse 60% 45% at center,rgba(0,0,0,.5),rgba(0,0,0,0) 75%),rgba(0,0,0,var(--velo,.12));transition:opacity 1.2s ease}
+#inicio.fuera{opacity:0;pointer-events:none}
+/* título y subtítulo al centro; la firma centrada abajo de todo */
+.rotulo{margin-top:calc(10vh - 18px);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;max-width:calc(100vw - 2 * var(--margen))}
+#inicio h1{margin:0 0 3vh;font-weight:400;letter-spacing:.01em;color:var(--texto)}
+#inicio .datos{margin:0;font-size:12px;letter-spacing:.09em;color:#fff}
+#inicio .firma{position:absolute;left:0;right:0;bottom:calc(var(--margen) + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-size:12px;letter-spacing:.06em;color:var(--texto-suave)}
+/* la nube con todos los videos aparece recién al entrar */
+#campo{transition:opacity 1.6s ease}
+body.en-inicio #campo{opacity:0}
+/* de fondo en el inicio: una sola nube 3D girando */
+#visor.fondo{display:block;z-index:10;pointer-events:none;transition:opacity 1.2s ease}
+#visor.fondo #lienzo{filter:grayscale(var(--fondo-gris)) blur(var(--fondo-blur)) brightness(var(--fondo-luz));transition:opacity 1.8s ease}   /* velado */
+#visor.fondo.cambiando #lienzo{opacity:0}
+#visor.fondo.saliendo{opacity:0}
+#visor.fondo .barra,#visor.fondo .inferior,#visor.fondo #cargando{display:none}
+#inicio .entrar{margin-top:7vh;font-size:12px;letter-spacing:.06em;color:var(--texto);opacity:.55;animation:respira 3.2s ease-in-out infinite}
+#inicio:hover .entrar,#inicio:focus-visible .entrar{opacity:1;animation:none;text-shadow:0 0 10px var(--gc)}
+@keyframes respira{50%{opacity:.18}}
+@media (prefers-reduced-motion:reduce){#inicio .entrar{animation:none}}
+/* aviso que aparece después de entrar */
+#aviso{position:fixed;left:50%;bottom:34px;transform:translate(-50%,8px);z-index:15;font-size:12px;letter-spacing:.03em;color:var(--texto);
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.14);border-radius:3px;padding:7px 12px;pointer-events:none;
+  opacity:0;transition:opacity .9s ease,transform .9s ease;white-space:nowrap}
+#aviso.visible{opacity:1;transform:translate(-50%,0)}
+/* botones del inicio y créditos */
+.inicio-barra{position:fixed;top:calc(var(--margen) - 8px + env(safe-area-inset-top,0px));right:calc(var(--margen) - 8px + env(safe-area-inset-right,0px));display:flex;gap:4px;z-index:30;transition:opacity .6s}
+.inicio-barra #cerrar{display:none}
+body.viendo .inicio-barra #cerrar{display:flex}
+body.quieto .inicio-barra{opacity:0}
+/* lo que ya no se usa queda oculto */
+#ayuda,#relato,#linea,#sonido,#aviso{display:none!important}
+#creditos h3{margin:16px 0 6px;font-size:12px;font-weight:400;letter-spacing:.06em;color:var(--texto)}
+#creditos .teclas{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;font-size:12px}
+#creditos .teclas b{color:var(--texto);font-weight:400;margin-right:5px}
+/* celular: controles táctiles en los créditos, botón de pausa, fondo más liviano */
+#creditos .solo-tactil,#pausa{display:none}
+body.tactil #creditos .solo-tactil{display:grid}
+body.tactil #creditos .solo-mouse{display:none}
+body.tactil #pausa{display:flex;grid-column:3;justify-self:end}
+body.tactil #visor.fondo #lienzo{filter:grayscale(var(--fondo-gris)) blur(3px) brightness(var(--fondo-luz))}
+#etiqueta small{color:var(--texto-suave);font-size:11px;margin-left:6px}
+@media (max-width:600px){#inicio h1{font-size:min(5vw,26px)}}
+#visor.pausado .titulo::after{content:"  · en pausa";color:var(--texto-suave)}
+#creditos{position:fixed;top:calc(var(--margen) + 36px + env(safe-area-inset-top,0px));right:calc(var(--margen) + env(safe-area-inset-right,0px));z-index:31;
+  width:min(360px,calc(100vw - 32px));max-height:calc(100vh - var(--margen) - 60px);overflow:auto;background:rgba(0,0,0,.84);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.14);border-radius:4px;padding:18px 22px 16px;font-size:13px;line-height:1.6;color:var(--texto-suave);box-shadow:var(--glow)}
+#creditos h2{margin:0 26px 2px 0;font-size:14px;font-weight:400;color:var(--texto);letter-spacing:.01em}
+#creditos p{margin:0 0 10px}
+#creditos .autor{color:var(--texto);margin-bottom:14px}
+#creditos .pie{margin:14px 0 0;font-size:11px;letter-spacing:.04em}
+#creditosCerrar{position:absolute;top:8px;right:8px;width:26px;height:26px}
+
+#inicio h1{position:relative;white-space:nowrap;font-size:clamp(18px,2.6vw,32px)}   /* una sola línea */
+#inicio h1.glitch{color:transparent}            /* el texto queda (para lectores de pantalla) pero se ve el canvas */
+#inicio h1 canvas{position:absolute;pointer-events:none}
+
+/* Visor */
+#visor{position:fixed;inset:0;background:var(--fondo-visor);display:none}
+#visor.abierto{display:block}
+#lienzo{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.barra{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px 40px;pointer-events:none;background:linear-gradient(rgba(0,0,0,.55),transparent);transition:opacity .6s}
+.barra>*{pointer-events:auto}
+.titulo{font-weight:400;font-size:13px;letter-spacing:.04em;color:var(--texto)}
+button{font:inherit;font-size:12px;color:var(--texto);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:3px;padding:6px 10px;cursor:pointer}
+button:hover{background:rgba(255,255,255,.12)}
+button[aria-pressed="true"]{background:rgba(255,255,255,.2)}
+.panel{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+/* parte de abajo: controles + línea de tiempo, sobre un degradé */
+.inferior{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:12px;padding:56px 20px 14px;
+  background:linear-gradient(transparent,rgba(0,0,0,.85) 70%);pointer-events:none;transition:opacity .6s;opacity:0}
+/* los controles aparecen solo cuando el mouse baja al borde inferior */
+#visor.abajo .inferior,.inferior:focus-within{opacity:1}
+.inferior>*{pointer-events:auto}
+.fila{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}   /* controles a la izquierda, sonido a la derecha */
+.fila .panel{grid-column:1 / 3;justify-content:flex-start}
+.fila #sonido{grid-column:3;justify-self:end}
+.acciones{display:flex;gap:4px}
+.icono{background:transparent;border:1px solid transparent;border-radius:50%;width:34px;height:34px;padding:0;color:var(--texto);transition:background .2s,box-shadow .2s}
+.icono[aria-pressed]{background:transparent}
+.icono:hover,.icono[aria-pressed]:hover{background:rgba(255,255,255,.1);box-shadow:var(--glow)}
+.inferior .panel span,#linea,.titulo{text-shadow:0 0 8px #000,0 0 3px #000}
+#ayudaBtn[aria-expanded="true"]{background:rgba(255,255,255,.14)}
+/* la interfaz se esconde sola cuando el mouse está quieto */
+#visor.quieto .barra,#visor.quieto .inferior{opacity:0}
+#visor.quieto{cursor:none}
+.panel label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--texto-suave)}
+.panel input[type=range]{width:130px;accent-color:#ddd}
+.panel label.extremos{flex-direction:row;align-items:center;gap:10px;font-size:12px;letter-spacing:.02em}
+.panel label.extremos span{min-width:52px;color:var(--texto-suave)}
+.panel label.extremos span:first-child{text-align:right}
+.panel label.extremos + label.extremos{margin-left:18px;padding-left:18px;border-left:1px solid rgba(255,255,255,.1)}
+.panel select{font:inherit;font-size:12px;background:#111;color:var(--texto);border:1px solid rgba(255,255,255,.15);border-radius:3px;padding:4px}
+.icono{display:flex;align-items:center;justify-content:center;padding:5px 8px}
+.icono .tacha{display:none}
+.icono[aria-pressed="false"] .tacha{display:inline}
+.icono[aria-pressed="false"]{color:var(--texto-suave)}
+/* Línea de tiempo */
+#linea{display:flex;align-items:center;gap:12px;font-size:11px;color:var(--texto);text-shadow:0 0 6px #000,0 0 2px #000;font-variant-numeric:tabular-nums}
+#linea.pausado #tActual::before{content:"❚❚  ";color:var(--texto)}
+#pista{position:relative;flex:1;height:14px;cursor:pointer;touch-action:none}
+#pista::before{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:rgba(255,255,255,.16);border-radius:2px;transition:height .15s,top .15s}
+#relleno{position:absolute;left:0;top:6px;height:2px;width:0;background:var(--texto);border-radius:2px;box-shadow:0 0 8px rgba(255,255,255,.35);transition:height .15s,top .15s}
+#cabeza{position:absolute;top:7px;left:0;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--texto);box-shadow:0 0 10px rgba(255,255,255,.5);opacity:0;transition:opacity .15s}
+#pista:hover::before,#pista:hover #relleno,#pista.arrastrando::before,#pista.arrastrando #relleno{top:5px;height:4px}
+#pista:hover #cabeza,#pista.arrastrando #cabeza{opacity:1}
+.ayuda{position:absolute;top:62px;right:20px;display:grid;gap:4px;font-size:12px;color:var(--texto-suave);line-height:1.5;
+  background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:12px 16px;transition:opacity .6s}
+/* texto de cada video (se escribe letra por letra) */
+#relato{position:absolute;top:58px;left:20px;margin:0;max-width:min(400px,calc(100vw - 40px));font-size:13px;line-height:1.65;color:#e2e2e2;
+  background:rgba(0,0,0,.58);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.08);
+  border-radius:3px;padding:12px 30px 12px 15px}
+#relatoTexto{white-space:pre-wrap}
+.titulo.con-texto{cursor:pointer;border-bottom:1px dotted rgba(255,255,255,.35);padding-bottom:1px}
+.titulo.con-texto:hover{border-bottom-color:var(--texto)}
+#relatoCerrar{position:absolute;top:6px;right:6px;width:20px;height:20px;padding:0;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:0;border-radius:50%;color:var(--texto-suave);cursor:pointer}
+#relatoCerrar:hover{color:var(--texto);background:rgba(255,255,255,.12)}
+#relato.escribiendo #relatoTexto::after{content:"";display:inline-block;width:.5em;height:1em;margin-left:2px;vertical-align:-2px;background:currentColor;animation:titila 1s steps(1) infinite}
+@keyframes titila{50%{opacity:0}}
+.ayuda b{color:var(--texto);font-weight:400;margin-right:6px}
+#cargando{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--texto-suave);font-size:12px;letter-spacing:.04em}
+@media (max-width:640px){.ayuda{display:none}.panel input[type=range]{width:100px}}
+</style>
+</head>
+<body>
+<main class="grilla" id="grilla"></main>
+
+<!-- ===== Pantalla de inicio: cambiá los textos acá ===== -->
+<div id="inicio" role="button" tabindex="0" aria-label="Entrar">
+  <div class="rotulo">
+    <h1>Lo recuerdo todo rojo, azul y verde</h1>
+    <p class="datos">Nueve videos de un archivo familiar</p>
+    <span class="entrar">hacé clic para entrar</span>
+  </div>
+  <p class="firma">Pedro Segalerba, 2026</p>
+</div>
+<div id="aviso">Hacé clic en un video para recorrerlo</div>
+
+<!-- ===== Botones del inicio: sonido ambiente y créditos ===== -->
+<div class="inicio-barra" id="inicioBarra">
+  <button id="sonidoInicio" class="icono" type="button" aria-pressed="true" aria-label="Sonido ambiente" title="Silenciar">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18 6.8a7.5 7.5 0 0 1 0 10.4"/>
+      <line class="tacha" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/>
+    </svg>
+  </button>
+  <button id="infoBtn" class="icono" type="button" aria-label="Información" title="Información" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".5" fill="currentColor"/>
+    </svg>
+  </button>
+  <button id="cerrar" class="icono" type="button" aria-label="Cerrar" title="Cerrar (Esc)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+</div>
+<!-- ===== Créditos: cambiá los textos acá ===== -->
+<div id="creditos" role="dialog" aria-label="Créditos" hidden>
+  <button id="creditosCerrar" class="icono" type="button" aria-label="Cerrar créditos" title="Cerrar">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <h2>Lo recuerdo todo rojo, azul y verde</h2>
+  <p class="autor">Pedro Segalerba · 2026</p>
+  <p>Nueve videos encontrados en el disco duro de la computadora de mi papá luego de su muerte. Fueron filmados con un celular o cámara digital alrededor del año 2011, en formato 3GP y a 176 × 144 píxeles.</p>
+  <p>La profundidad de cada video fue estimada con inteligencia artificial (Video Depth Anything) y a partir de eso se convirtió cada uno en una nube de puntos (three.js), con la idea de poder recorrer y habitar estos recuerdos.</p>
+  <p class="pie">Diseño de Imagen y Sonido · FADU · UBA</p>
+  <h3>Controles</h3>
+  <div class="teclas solo-mouse">
+    <div><b>Clic</b> abrir un video</div><div><b>Arrastrar</b> girar</div><div><b>Rueda</b> acercar</div>
+    <div><b>Clic derecho</b> mover</div><div><b>Shift + arrastrar</b> mover el punto de giro</div><div><b>Espacio</b> pausa</div><div><b>Esc</b> volver al inicio</div>
+    <div><b>Mouse abajo</b> controles</div>
+  </div>
+  <div class="teclas solo-tactil">
+    <div><b>Tocar</b> elegir un video</div><div><b>Tocar otra vez</b> abrirlo</div><div><b>Un dedo</b> girar</div>
+    <div><b>Pellizcar</b> acercar</div><div><b>Dos dedos</b> mover</div><div><b>Tocar la pantalla</b> controles</div>
+    <div><b>✕</b> volver al inicio</div>
+  </div>
+</div>
+
+<div id="visor" aria-hidden="true">
+  <canvas id="lienzo"></canvas>
+  <div id="cargando">Cargando…</div>
+  <div class="barra">
+    <div class="titulo" id="titulo"></div>
+    <div class="acciones">
+    </div>
+  </div>
+  <div id="relato" hidden>
+    <span id="relatoTexto"></span>
+    <button id="relatoCerrar" type="button" aria-label="Cerrar texto" title="Cerrar texto">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="ayuda" id="ayuda" hidden>
+    <div><b>Arrastrar</b> girar</div><div><b>Rueda</b> acercar</div><div><b>Clic derecho</b> mover</div>
+    <div><b>Espacio</b> pausa</div><div><b>Clic en el nombre</b> ver el texto completo</div><div><b>Esc</b> volver al inicio</div>
+  </div>
+  <div class="inferior">
+    <div class="fila">
+      <div class="panel">
+        <label class="extremos" title="Tamaño de los puntos"><span>olvidar</span><input id="tam" type="range" min="0.3" max="12" step="0.1" value="4" aria-label="Tamaño de los puntos: de olvidar a recordar"><span>recordar</span></label>
+        <label id="lDens">Densidad <input id="dens" type="range" min="2" max="100" step="1" value="100"></label>
+        <label id="lRel" class="extremos" title="Relieve" hidden><span>mirar</span><input id="rel" type="range" min="1.1" max="20" step="0.1" value="4" aria-label="Relieve: de mirar a habitar"><span>habitar</span></label>
+      </div>
+      <button id="pausa" class="icono" type="button" aria-label="Pausa" title="Pausa">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path class="i-pausa" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" d="M8 5l11 7-11 7z" style="display:none"/></svg>
+      </button>
+      <button id="sonido" class="icono" type="button" aria-pressed="true" aria-label="Sonido" title="Sonido" hidden>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18 6.8a7.5 7.5 0 0 1 0 10.4"/>
+          <line class="tacha" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/>
+        </svg>
+      </button>
+    </div>
+    <div id="linea" hidden>
+      <span id="tActual">0:00</span>
+      <div id="pista"><div id="relleno"></div><div id="cabeza"></div></div>
+      <span id="tTotal">0:00</span>
+    </div>
+  </div>
+</div>
+
+<script src="lib/three.min.js"></script>
+<script src="lib/OrbitControls.js"></script>
+<script>
+// ===== Lista de la grilla: una línea por cada elemento =====
+// tipo "nube": nube de puntos fija (archivo en nubes/). audio opcional.
+// tipo "video": video con profundidad (archivo en videos/), se reproduce con su propio sonido.
+const LISTA = [
+  { tipo: "video", key: "0016",  titulo: "Vídeo0016" },
+  { tipo: "video", key: "0018",  titulo: "Vídeo0018",
+    texto: "Nunca me divirtió mucho pescar, pero siempre acompañaba. Fermín era el que más pescaba, sin duda. Yo me aburría y caminaba o filmaba con el celular de mi papá. Hay algo que me atormenta de este video: un hombre, en 2 o 3 frames, que pesca pacientemente. No logro descifrar si es mi papá o no. Pasé mucho tiempo sacando conclusiones, intentando acordarme, analizando la forma de esos pixeles, pero no tengo una respuesta aún." },
+  { tipo: "video", key: "0029",  titulo: "Vídeo0029" },
+  { tipo: "video", key: "0030",  titulo: "Vídeo0030" },
+  { tipo: "video", key: "0031",  titulo: "Vídeo0031", 
+    texto: "Mi hermano Fermín anda a caballo por un barrio de Santa Rosa. Yo comento el video, y registro de forma insistente cada momento. Quisiera acordarme de haber grabado este y los demás videos, pero se me hace difícil. Me resulta raro escucharme y ver un registro hecho por mí, es como un recuerdo ajeno casi, fantasmagórico. Tengo el registro que me dice que sucedió pero no lo recuerdo." },
+  { tipo: "video", key: "0032",  titulo: "Vídeo0032" },
+  { tipo: "video", key: "0033",  titulo: "Vídeo0033" },
+  { tipo: "video", key: "0034",  titulo: "Vídeo0034", 
+    texto: "Estábamos aprendiendo a jugar al pato, deporte en el que para levantar la pelota del piso los jinetes se inclinan desde su caballo en movimiento hasta quedar colgando cabeza abajo. Creo que ese día conseguí hacerlo con el caballo quieto. El que dice “a mí, a mí, a mí” soy yo pidiéndole a mi papá que me grabe." },
+  { tipo: "video", key: "00347", titulo: "Vídeo00347" },
+];
+// ===== Celular y publicación en internet =====
+// TACTIL: pantallas sin mouse (celular, tablet). Cambia cómo se elige un video, los controles y baja un poco la carga.
+const TACTIL = matchMedia("(hover: none) and (pointer: coarse)").matches;
+if (TACTIL) document.body.classList.add("tactil");
+// EN_WEB: la página se abre desde un servidor (publicada, o con ver_como_web.bat).
+// Ahí se usan los videos sueltos (videos/*.mp4 o *.webm), que pesan menos y cargan de a uno.
+// Abriendo index.html con doble clic se siguen usando los videos/*.js de siempre.
+const EN_WEB = location.protocol === "http:" || location.protocol === "https:";
+const INFO_VIDEOS = { "0016": [176, 144, 1.33333], "0018": [176, 144, 1.33333], "0029": [176, 144, 1.33333], "0030": [176, 144, 1.33333], "0031": [176, 144, 1.33333],
+                      "0032": [176, 144, 1.33333], "0033": [176, 144, 1.33333], "0034": [176, 144, 1.33333], "00347": [176, 144, 1.33333] };   // ancho, alto, proporción
+if (EN_WEB) {
+  const prueba = document.createElement("video");
+  const ext = prueba.canPlayType('video/mp4; codecs="avc1.640020, mp4a.40.2"') ? "mp4" : "webm";   // mp4 anda en casi todo (iPhone incluido)
+  window.VIDEOS = {};
+  for (const k in INFO_VIDEOS) { const [w, h, aspect] = INFO_VIDEOS[k]; window.VIDEOS[k] = { w, h, aspect, src: `videos/${k}.${ext}` }; }
+}
+function prepararVideo(v) { v.playsInline = true; v.setAttribute("playsinline", ""); v.preload = "auto"; return v; }
+
+const FLOTAR = 12;         // cuánto se mueve cada recuadro al flotar, en px (0 = quietos)
+const VELOCIDAD = 1;       // velocidad del flote (más alto = más rápido)
+const MARGEN = 32;         // distancia mínima a los bordes de la pantalla, en px
+const VOLUMEN = 0.8;       // volumen del sonido (0 a 1)
+const FOV_VIDEO = 50;      // ángulo de visión supuesto para los videos
+
+function cargarScript(src) {
+  return new Promise((ok, mal) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = ok; s.onerror = () => mal(new Error("No encuentro " + src));
+    document.head.appendChild(s);
+  });
+}
+
+// ===== Nube de inicio: los videos mezclados, disolviéndose entre sí =====
+const CAMPO = {
+  paso: 3,           // separación entre puntos, en px (más chico = más puntos)
+  tamano: 0.6,       // tamaño de los puntos
+  escala: 1.6,       // tamaño de cada video dentro de la nube
+  bordeVideo: 0.5,   // qué tan ancho es el degradé con que cada video se disuelve hacia afuera (0.2 = más nítido, 0.6 = más difuso)
+  separacion: 1,     // distancia entre los centros de los videos
+  mezcla: 5,         // cuánto se separan las zonas (más alto = más definidas, más bajo = más mezcladas)
+  relieve: 14,       // cuánto se mueven los puntos cercanos con el mouse, en px
+  borde: 0.5,        // radio de la nube antes de desgranarse hacia los bordes (proporción de la pantalla)
+  puente: 0.4,       // densidad de los puntos que unen los videos en el espacio entre ellos (0 = nada)
+  puenteLuz: 0.6,    // brillo de esos puntos (más bajo = más oscuro)
+};
+const grilla = document.getElementById("grilla");
+const campoCv = document.createElement("canvas"); campoCv.id = "campo"; grilla.appendChild(campoCv);
+const etiqueta = document.createElement("div"); etiqueta.id = "etiqueta"; etiqueta.hidden = true; grilla.appendChild(etiqueta);
+const vidsCampo = [];                                   // un <video> oculto por cada archivo
+const ATW = 3, CW = 352, CH = 144;                      // atlas 3x3 (cada celda: color | profundidad)
+const atlas = document.createElement("canvas"); atlas.width = ATW * CW; atlas.height = 3 * CH;
+const actx = atlas.getContext("2d");
+LISTA.forEach((it, i) => {
+  (window.VIDEOS && window.VIDEOS[it.key] ? Promise.resolve() : cargarScript(`videos/${it.key}.js`)).then(() => {
+    const v = prepararVideo(document.createElement("video"));
+    v.muted = true; v.setAttribute("muted", ""); v.loop = true; v.src = window.VIDEOS[it.key].src;
+    v.currentTime = Math.random() * 5; vidsCampo[i] = v;
+    if (!document.body.classList.contains("en-inicio")) v.play().catch(() => {});   // durante la pantalla de inicio quedan quietos
+  }).catch(() => {});
+});
+const rCampo = new THREE.WebGLRenderer({ canvas: campoCv, antialias: false, alpha: false });
+rCampo.setClearColor("#000");
+const escCampo = new THREE.Scene(), camCampo = new THREE.OrthographicCamera(0, 1, 0, 1, -10, 10);
+const texAtlas = new THREE.CanvasTexture(atlas); texAtlas.minFilter = texAtlas.magFilter = THREE.LinearFilter; texAtlas.generateMipmaps = false; texAtlas.flipY = false;
+const matCampo = new THREE.ShaderMaterial({
+  uniforms: { atlas: { value: texAtlas }, uMouse: { value: new THREE.Vector2() }, uRel: { value: CAMPO.relieve }, uTam: { value: CAMPO.tamano },
+              uPR: { value: 1 }, uFoco: { value: -1 }, uFocoA: { value: 0 }, uTime: { value: 0 }, uPuenteLuz: { value: CAMPO.puenteLuz }, uVisto: { value: new Array(LISTA.length).fill(0) } },
+  vertexShader: `
+    attribute vec2 uvv; attribute float duenio; attribute vec3 rnd; attribute float tenue; varying vec4 vC;
+    uniform sampler2D atlas; uniform vec2 uMouse; uniform float uRel, uTam, uPR, uFoco, uFocoA, uTime, uPuenteLuz; uniform float uVisto[${LISTA.length}];
+    vec2 espejo(vec2 u){ u = abs(u); return 1.0 - abs(1.0 - u); }
+    void main(){
+      vec2 m = clamp(uvv, 0.0, 1.0);
+      float cx = mod(duenio, 3.0), cy = floor(duenio / 3.0);
+      vec2 base = vec2(cx / 3.0, cy / 3.0);
+      vec3 col = texture2D(atlas, base + vec2(m.x * 0.5, m.y) / 3.0).rgb;
+      float d = texture2D(atlas, base + vec2(0.5 + m.x * 0.5, m.y) / 3.0).r;
+      col *= (0.68 + 0.42 * d) * mix(1.0, uPuenteLuz, tenue);
+      if (uVisto[int(duenio + 0.5)] > 0.5) { float gv = dot(col, vec3(0.333)); col = mix(col, vec3(gv), 0.8) * 0.6; }   // rastro de lo visto
+      float f = 1.0;
+      if (uFoco >= 0.0) {
+        float es = abs(duenio - uFoco) < 0.5 ? 1.0 : 0.0;
+        float gris = dot(col, vec3(0.333));
+        vec3 apagado = mix(col, vec3(gris), 0.7) * 0.22;
+        col = mix(col, es > 0.5 ? col * 1.15 : apagado, uFocoA);
+        f = mix(1.0, es > 0.5 ? 1.15 : 0.85, uFocoA);
+      }
+      vC = vec4(col, 1.0);
+      vec2 p = position.xy + vec2(d - 0.5, -(d - 0.5) * 0.5) * 10.0 + (d - 0.5) * uMouse * uRel;   // relieve: lo cercano se corre más
+      p += vec2(sin(uTime * 0.4 + rnd.x * 30.0), cos(uTime * 0.33 + rnd.y * 30.0)) * 0.6;          // respiración
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 0.0, 1.0);
+      gl_PointSize = (1.0 + 2.6 * d) * uTam * f * 2.2 * uPR * mix(1.0, 0.75, tenue);
+    }`,
+  fragmentShader: `
+    varying vec4 vC;
+    void main(){ vec2 c = gl_PointCoord * 2.0 - 1.0; float r2 = dot(c, c); if (r2 > 1.0) discard;
+      gl_FragColor = vec4(vC.rgb, exp(-r2 * 2.6)); }`,
+  transparent: true, depthWrite: false, depthTest: false,
+});
+let puntosCampo = null, mapaDuenios = null, mapaW = 0, mapaH = 0;
+// ruido suave para deformar las zonas
+const semCampo = Math.random() * 100;
+function hashC(x, y, k) { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7 + semCampo) * 43758.5453; return v - Math.floor(v); }
+function ruidoC(x, y, k) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  return (hashC(xi, yi, k) * (1 - u) + hashC(xi + 1, yi, k) * u) * (1 - v) + (hashC(xi, yi + 1, k) * (1 - u) + hashC(xi + 1, yi + 1, k) * u) * v; }
+function armarCampo() {
+  const W = window.innerWidth, H = window.innerHeight, pr = Math.min(TACTIL ? 1.5 : 2, window.devicePixelRatio || 1);
+  rCampo.setPixelRatio(pr); rCampo.setSize(W, H, false);
+  camCampo.left = 0; camCampo.right = W; camCampo.top = 0; camCampo.bottom = H; camCampo.updateProjectionMatrix();
+  matCampo.uniforms.uPR.value = pr;
+  // tamaño de los videos según la pantalla (en pantallas verticales se calcula por superficie, para que la llenen)
+  const k = H > W ? Math.sqrt(W * H / (1920 * 1080)) * 1.2 : Math.min(W / 1920, H / 1080);
+  const orden = LISTA.map((_, i) => i).sort(() => Math.random() - 0.5);
+  // ubicación de cada video: repartidos por toda la pantalla pero sin grilla
+  // (cada uno se elige entre varias posiciones al azar, la más alejada de los ya ubicados)
+  const mx = W * 0.09, my = H * 0.13, seeds = [];
+  for (let n = 0; n < orden.length; n++) {
+    let mejor = null, md = -1;
+    for (let c = 0; c < 40; c++) {
+      const cx = mx + Math.random() * (W - 2 * mx), cy = my + Math.random() * (H - 2 * my);
+      let d = 1e9; for (const sd of seeds) d = Math.min(d, Math.hypot((cx - sd[0]) / W, (cy - sd[1]) / H * 0.8));
+      if (seeds.length === 0) d = Math.random();
+      if (d > md) { md = d; mejor = [cx, cy, 0.85 + Math.random() * 0.35]; }
+    }
+    seeds.push(mejor);
+  }
+  const ww0 = 192 * CAMPO.escala * k, hh0 = 144 * CAMPO.escala * k;
+  const P = CAMPO.paso; mapaW = Math.ceil(W / P); mapaH = Math.ceil(H / P); mapaDuenios = new Int8Array(mapaW * mapaH).fill(-1);
+  const pos = [], uvv = [], due = [], rnd = [], ten = [], pesos = new Float64Array(seeds.length);
+  for (let gy = 0; gy < mapaH; gy++) for (let gx = 0; gx < mapaW; gx++) {
+    const x = (gx + 0.5) * P + (Math.random() - 0.5) * P * 0.5, y = (gy + 0.5) * P + (Math.random() - 0.5) * P * 0.5;
+    const qx = x + (ruidoC(x / 220 / k, y / 220 / k, 1) - 0.5) * 150 * k, qy = y + (ruidoC(x / 220 / k, y / 220 / k, 2) - 0.5) * 150 * k;
+    const e = Math.hypot((qx - W / 2) / (W * CAMPO.borde), (qy - H / 2) / (H * CAMPO.borde));     // se desgrana en las esquinas
+    if (Math.random() < Math.min(1, Math.max(0, (e - 0.95) / 0.5))) continue;
+    // campo continuo: cada video "irradia" desde su centro y se apaga suave; donde dos se cruzan, se mezclan
+    const nb = (ruidoC(x / 80 / k, y / 80 / k, 3) - 0.5) + (ruidoC(x / 24 / k, y / 24 / k, 4) - 0.5) * 0.5;
+    let F = 0, tot = 0, dmin = 1e9;
+    for (let s = 0; s < seeds.length; s++) {
+      const ww = ww0 * seeds[s][2], hh = hh0 * seeds[s][2];
+      const rr = Math.max(0, Math.hypot((qx - seeds[s][0]) / (ww / 2), (qy - seeds[s][1]) / (hh / 2)) + nb * 0.45);
+      const f = Math.exp(-rr * rr / (CAMPO.bordeVideo * 2.2));
+      F += f; pesos[s] = f * f; tot += pesos[s]; dmin = Math.min(dmin, rr);
+    }
+    const dens = Math.min(1, F * 1.25);
+    const puente = CAMPO.puente * (0.35 + 0.65 * Math.exp(-Math.max(0, dmin - 1) * 1.2));
+    if (Math.random() > dens + (1 - dens) * puente) continue;
+    let r = Math.random() * tot, s = 0; while (s < seeds.length - 1 && (r -= pesos[s]) > 0) s++;
+    const ww = ww0 * seeds[s][2], hh = hh0 * seeds[s][2];
+    let uu = (x - seeds[s][0]) / ww + 0.5, vv = (y - seeds[s][1]) / hh + 0.5;
+    const ru = Math.hypot((uu - 0.5) / 0.5, (vv - 0.5) / 0.5);
+    if (ru > 0.92) {     // fuera de la mancha de su video: toma colores al azar de una zona cercana al borde (sin espejar ni estirar)
+      const a = Math.atan2(vv - 0.5, uu - 0.5) + (Math.random() - 0.5) * 0.9, rad = 0.92 - Math.random() * 0.45;
+      uu = 0.5 + Math.cos(a) * rad * 0.5; vv = 0.5 + Math.sin(a) * rad * 0.5;
+    }
+    pos.push(x, y, 0); uvv.push(uu, vv); due.push(orden[s]); ten.push(1 - dens);
+    rnd.push(Math.random(), Math.random(), Math.random());
+    mapaDuenios[gy * mapaW + gx] = orden[s];
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("uvv", new THREE.Float32BufferAttribute(uvv, 2));
+  g.setAttribute("duenio", new THREE.Float32BufferAttribute(due, 1));
+  g.setAttribute("rnd", new THREE.Float32BufferAttribute(rnd, 3));
+  g.setAttribute("tenue", new THREE.Float32BufferAttribute(ten, 1));
+  if (puntosCampo) { escCampo.remove(puntosCampo); puntosCampo.geometry.dispose(); }
+  puntosCampo = new THREE.Points(g, matCampo); puntosCampo.frustumCulled = false; escCampo.add(puntosCampo);
+}
+armarCampo();
+let tmCampo; window.addEventListener("resize", () => { clearTimeout(tmCampo); tmCampo = setTimeout(armarCampo, 200); });
+
+// hover: qué video hay bajo el cursor (se mira un pequeño entorno para que sea estable)
+const mouseObj = new THREE.Vector2(), mouseAct = new THREE.Vector2(); let focoObj = -1, focoAnim = 0;
+function duenioEn(x, y) {
+  if (!mapaDuenios) return -1;
+  const P = CAMPO.paso, gx = Math.floor(x / P), gy = Math.floor(y / P), cuenta = new Array(LISTA.length).fill(0);
+  for (let j = -3; j <= 3; j++) for (let i = -3; i <= 3; i++) {
+    const X = gx + i, Y = gy + j; if (X < 0 || Y < 0 || X >= mapaW || Y >= mapaH) continue;
+    const d = mapaDuenios[Y * mapaW + X]; if (d >= 0) cuenta[d]++;
+  }
+  let mej = -1, mc = 6; cuenta.forEach((c, i) => { if (c > mc) { mc = c; mej = i; } });
+  return mej;
+}
+function mostrarEtiqueta(d, x, y, pista) {
+  etiqueta.innerHTML = ""; etiqueta.append(LISTA[d].titulo);
+  if (pista) { const s = document.createElement("small"); s.textContent = pista; etiqueta.append(s); }
+  etiqueta.hidden = false;
+  const ew = etiqueta.offsetWidth, eh = etiqueta.offsetHeight;               // que no se salga de la pantalla
+  const ex = Math.max(8, Math.min(x + 16, window.innerWidth - ew - 8)), ey = Math.max(8, Math.min(y + 14, window.innerHeight - eh - 8));
+  etiqueta.style.transform = `translate(${ex}px, ${ey}px)`;
+}
+let focoTactil = -1;                                   // celular: primer toque elige el video, el segundo lo abre
+grilla.addEventListener("pointermove", e => {
+  if (e.pointerType === "touch") return;
+  mouseObj.set(e.clientX / window.innerWidth * 2 - 1, e.clientY / window.innerHeight * 2 - 1);
+  const d = duenioEn(e.clientX, e.clientY);
+  if (d >= 0) { focoObj = d; mostrarEtiqueta(d, e.clientX, e.clientY); grilla.style.cursor = "pointer"; }
+  else { focoObj = -1; etiqueta.hidden = true; grilla.style.cursor = "default"; }
+});
+grilla.addEventListener("pointerleave", e => { if (e.pointerType === "touch") return; focoObj = -1; etiqueta.hidden = true; mouseObj.set(0, 0); });
+grilla.addEventListener("click", e => {
+  if (recienCerrados) return;
+  const d = duenioEn(e.clientX, e.clientY);
+  if (TACTIL) {
+    mouseObj.set(e.clientX / window.innerWidth * 2 - 1, e.clientY / window.innerHeight * 2 - 1);
+    if (d < 0) { focoTactil = focoObj = -1; etiqueta.hidden = true; return; }
+    if (d !== focoTactil) { focoTactil = focoObj = d; mostrarEtiqueta(d, e.clientX, e.clientY, "tocá otra vez para abrir"); return; }
+  }
+  if (d >= 0) { focoTactil = focoObj = -1; etiqueta.hidden = true; abrir(LISTA[d]); }
+});
+
+const relojCampo = new THREE.Clock();
+function dibujarCampo() {
+  requestAnimationFrame(dibujarCampo);
+  if (abierto || document.body.classList.contains("en-inicio")) return;   // tapado: no hace falta dibujarlo
+  for (let i = 0; i < LISTA.length; i++) {            // copia los cuadros actuales al atlas
+    const v = vidsCampo[i]; if (!v || v.readyState < 2) continue;
+    actx.drawImage(v, (i % 3) * CW, Math.floor(i / 3) * CH, CW, CH);
+  }
+  texAtlas.needsUpdate = true;
+  mouseAct.lerp(mouseObj, 0.06); matCampo.uniforms.uMouse.value.copy(mouseAct);
+  if (focoObj >= 0) { matCampo.uniforms.uFoco.value = focoObj; focoAnim = Math.min(1, focoAnim + 0.08); }
+  else focoAnim = Math.max(0, focoAnim - 0.06);
+  if (focoAnim === 0) matCampo.uniforms.uFoco.value = -1;
+  enfocarSonido(focoObj);
+  matCampo.uniforms.uFocoA.value = focoAnim * focoAnim * (3 - 2 * focoAnim);
+  matCampo.uniforms.uTime.value = relojCampo.getElapsedTime();
+  rCampo.render(escCampo, camCampo);
+}
+requestAnimationFrame(dibujarCampo);
+
+// ===== Brillo que cambia de color (paleta de la portada) =====
+const PALETA = ["#F3F7F8", "#B60D32", "#D72D61", "#5AF1E3", "#B0DB8E", "#D68B6A"];
+(function brillos() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const otro = actual => { let c; do c = PALETA[Math.floor(Math.random() * PALETA.length)]; while (c === actual && PALETA.length > 1); return c; };
+  function ciclo(el) {                       // cada elemento cambia a su ritmo, entre 2,5 y 6,5 segundos
+    el.style.setProperty("--gc", otro(el.style.getPropertyValue("--gc")));
+    setTimeout(() => ciclo(el), 2500 + Math.random() * 4000);
+  }
+  ciclo(document.documentElement);
+  setTimeout(() => document.querySelectorAll(".cuadro").forEach(el => ciclo(el)), 600);
+})();
+
+// ===== Pantalla de inicio =====
+const inicio = document.getElementById("inicio");
+const aviso = document.getElementById("aviso");
+document.body.classList.add("en-inicio");
+function entrar() {
+  if (inicio.classList.contains("fuera")) return;
+  document.body.classList.remove("en-inicio");
+  terminarFondo();
+  inicio.classList.add("fuera"); setTimeout(() => inicio.remove(), 1300);
+  vidsCampo.forEach(v => v && v.play().catch(() => {}));                // los videos de la nube arrancan al entrar
+  iniciarMurmullo();
+
+  setTimeout(() => aviso.classList.remove("visible"), 7500);             // ...y se va solo
+}
+inicio.addEventListener("click", entrar);
+inicio.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") entrar(); });
+inicio.focus();
+if (TACTIL) inicio.querySelector(".entrar").textContent = "tocá para entrar";
+
+// ===== Título con pixelado y aberración =====
+// Ajustes:
+const GLITCH = {
+  pixelMax: 14,      // tamaño máximo de los bloques del pixelado, en px
+  aberracion: 9,     // separación máxima de los colores (rojo / azul), en px
+  desplazo: 5,       // cuánto se corren verticalmente las franjas, en px
+  velocidad: 1,      // velocidad general (más alto = más rápido)
+  legible: 0.3,      // de 0 a 1: más alto = más tiempo se lee bien
+  frecuencia: 1.8,   // cada cuánto aparece el efecto (más alto = más seguido)
+  hover: 1,          // intensidad al pasar el cursor por el título (0 = nada, 1 = máximo)
+  ancho: 0.35,       // ancho de la zona afectada, en proporción al título
+};
+(function tituloGlitch() {
+  const h1 = document.querySelector("#inicio h1");
+  if (!h1 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const PAD = 28;                                      // margen para que la aberración no se corte
+  const cv = document.createElement("canvas"); cv.setAttribute("aria-hidden", "true");
+  const ctx = cv.getContext("2d");
+  let W, H, dpr, niveles, F, tint, raf;
+  // cursor sobre el título: el efecto se enciende y sigue al mouse
+  let encima = false, hv = 0, mx = 0.5;
+  h1.addEventListener("pointerenter", () => encima = true);
+  h1.addEventListener("pointerleave", () => encima = false);
+  h1.addEventListener("pointermove", e => { const r = h1.getBoundingClientRect(); mx = (e.clientX - r.left + PAD) / (r.width + PAD * 2); });
+
+  // ruido suave (valores al azar interpolados) para que todo se mueva fluido
+  const semilla = Math.random() * 1000;
+  function azar(i, k) { const x = Math.sin((i + semilla) * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); }
+  function ruido(t, k) { const i = Math.floor(t), f = t - i, u = (1 - Math.cos(f * Math.PI)) / 2; return azar(i, k) * (1 - u) + azar(i + 1, k) * u; }
+  const suave = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const lienzo = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+
+  function preparar() {
+    const r = h1.getBoundingClientRect(), cs = getComputedStyle(h1);
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.ceil((r.width + PAD * 2) * dpr); H = Math.ceil((r.height + PAD * 2) * dpr);
+    cv.width = W; cv.height = H;
+    Object.assign(cv.style, { left: -PAD + "px", top: -PAD + "px", width: W / dpr + "px", height: H / dpr + "px" });
+    // título en blanco, nítido
+    const base = lienzo(W, H), b = base.getContext("2d");
+    b.scale(dpr, dpr); b.fillStyle = "#fff"; b.textAlign = "center"; b.textBaseline = "middle";
+    b.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    if ("letterSpacing" in b) b.letterSpacing = cs.letterSpacing;
+    b.fillText(h1.textContent.trim(), W / dpr / 2, H / dpr / 2);
+    // versiones pixeladas, de bloque 1 (nítido) a pixelMax
+    niveles = [];
+    const pasos = 8;
+    for (let n = 0; n < pasos; n++) {
+      const blq = Math.max(1, Math.round((1 + (GLITCH.pixelMax - 1) * n / (pasos - 1)) * dpr));
+      if (blq === 1) { niveles.push(base); continue; }
+      const sw = Math.ceil(W / blq), sh = Math.ceil(H / blq), chico = lienzo(sw, sh), c2 = chico.getContext("2d");
+      c2.imageSmoothingEnabled = true; c2.drawImage(base, 0, 0, sw, sh);
+      const grande = lienzo(W, H), g2 = grande.getContext("2d");
+      g2.imageSmoothingEnabled = false; g2.drawImage(chico, 0, 0, sw * blq, sh * blq);
+      niveles.push(grande);
+    }
+    F = lienzo(W, H);
+    tint = ["#f00", "#0f0", "#00f"].map(col => ({ col, c: lienzo(W, H) }));
+    if (!cv.parentNode) h1.appendChild(cv);
+    h1.classList.add("glitch");
+  }
+
+  function cuadro(ms) {
+    const t = ms / 1000 * GLITCH.velocidad;
+    // intensidad general: hay tramos en 0 (se lee bien) y tramos donde sube
+    const u0 = 0.25 + GLITCH.legible * 0.6;
+    hv += ((encima ? 1 : 0) - hv) * (encima ? 0.12 : 0.04);       // sube rápido al entrar, baja despacio al salir
+    const g0 = suave(u0, Math.min(0.98, u0 + 0.3), ruido(t * 0.45 * GLITCH.frecuencia, 1)) * (0.6 + 0.4 * ruido(t * 1.7, 2));
+    const g = Math.max(g0, hv * GLITCH.hover * (0.65 + 0.35 * ruido(t * 2.5, 8)));
+    const cx = ((0.1 + 0.8 * ruido(t * 0.3 * GLITCH.frecuencia, 3)) * (1 - hv) + mx * hv) * W;   // centro de la zona: recorre el título, o sigue al cursor
+    const bw = (GLITCH.ancho * (0.6 + 0.8 * ruido(t * 0.2, 4))) * W;
+    const SL = Math.max(2, Math.round(3 * dpr));                    // ancho de cada franja vertical
+    const fx = F.getContext("2d"); fx.clearRect(0, 0, W, H);
+    const loc = [];
+    let quieto = -1;                                    // tramos sin efecto se dibujan de una sola vez
+    const cerrar = x => { if (quieto >= 0) { fx.drawImage(niveles[0], quieto, 0, x - quieto, H, quieto, 0, x - quieto, H); quieto = -1; } };
+    for (let x = 0, i = 0; x < W; x += SL, i++) {
+      const d = (x + SL / 2 - cx) / bw;
+      const l = g * Math.exp(-d * d * 2) * (0.7 + 0.3 * ruido(i * 0.12 + t * 1.3, 5));
+      loc.push(l);
+      if (l < 0.01) { if (quieto < 0) quieto = x; continue; }
+      cerrar(x);
+      const nv = Math.min(niveles.length - 1, Math.round(l * (niveles.length - 1)));
+      const dy = (ruido(i * 0.07 + t * 2.2, 6) - 0.5) * 2 * l * GLITCH.desplazo * dpr;
+      fx.drawImage(niveles[nv], x, 0, SL, H, x, dy, SL, H);
+    }
+    cerrar(W);
+    // aberración: tres copias (rojo, verde, azul) corridas según la intensidad de cada franja
+    for (const k of tint) { const c = k.c.getContext("2d"); c.globalCompositeOperation = "copy"; c.drawImage(F, 0, 0); c.globalCompositeOperation = "source-in"; c.fillStyle = k.col; c.fillRect(0, 0, W, H); }
+    ctx.clearRect(0, 0, W, H); ctx.globalCompositeOperation = "lighter";
+    const osc = 0.5 + 0.5 * ruido(t * 3, 7);
+    let q = -1;
+    const pegar = (x0, x1, dx) => { const w = x1 - x0;
+      ctx.drawImage(tint[0].c, x0, 0, w, H, x0 - dx, 0, w, H);
+      ctx.drawImage(tint[1].c, x0, 0, w, H, x0, 0, w, H);
+      ctx.drawImage(tint[2].c, x0, 0, w, H, x0 + dx, dx * 0.25, w, H); };
+    for (let x = 0, i = 0; x < W; x += SL, i++) {
+      const dx = loc[i] * GLITCH.aberracion * dpr * osc;
+      if (dx < 0.3) { if (q < 0) q = x; continue; }
+      if (q >= 0) { pegar(q, x, 0); q = -1; }
+      pegar(x, Math.min(W, x + SL), dx);
+    }
+    if (q >= 0) pegar(q, W, 0);
+    if (document.body.contains(cv)) raf = requestAnimationFrame(cuadro);
+  }
+
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { preparar(); raf = requestAnimationFrame(cuadro); });
+  let tm; window.addEventListener("resize", () => { clearTimeout(tm); tm = setTimeout(() => { if (document.body.contains(h1)) preparar(); }, 150); });
+})();
+
+// ===== Murmullo: el sonido de todos los videos del inicio, superpuesto y muy bajo =====
+const MURMULLO = {
+  volumen: 0.07,     // volumen de cada video en el murmullo (0 a 1)
+  foco: 0.55,        // volumen del video que está bajo el mouse
+  filtro: 900,       // qué tan "lejano" suena el murmullo (Hz: más bajo = más apagado)
+};
+let audioCtx = null, master = null, focoSonido = -2;
+const pistas = [];
+function videoDeInicio(i) { return vidsCampo[i]; }
+function iniciarMurmullo() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    master = audioCtx.createGain(); master.gain.value = sonidoOn ? 1 : 0; master.connect(audioCtx.destination);
+  } catch (e) { audioCtx = null; return; }
+  if (TACTIL && EN_WEB) { cargarMurmulloTactil(); return; }
+  conectarPendientes(); setInterval(conectarPendientes, 1000);
+}
+// en el celular el murmullo sale de archivos de audio sueltos (audio/*.m4a), arrancando donde va cada video
+function cargarMurmulloTactil() {
+  LISTA.forEach(async (it, i) => {
+    try {
+      let buf = null;
+      for (const arch of [`audio/${it.key}.m4a`, `audio/${it.key}.webm`]) {   // m4a (iPhone y casi todos); webm por las dudas
+        try { buf = await audioCtx.decodeAudioData(await (await fetch(arch)).arrayBuffer()); break; } catch (e) {}
+      }
+      if (!buf) throw new Error("sin audio");
+      const src = audioCtx.createBufferSource(); src.buffer = buf; src.loop = true;
+      const f = audioCtx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = MURMULLO.filtro;
+      const g = audioCtx.createGain(); g.gain.value = MURMULLO.volumen;
+      src.connect(f).connect(g).connect(master);
+      const v = vidsCampo[i]; src.start(0, v ? v.currentTime % buf.duration : 0);
+      pistas[i] = { g, f, src }; focoSonido = -2;
+    } catch (e) { pistas[i] = null; }
+  });
+}
+function silenciarMurmullo(on) { if (master) master.gain.setTargetAtTime(on || !sonidoOn ? 0 : 1, audioCtx.currentTime, 0.2); }
+function conectarPendientes() {
+  if (!audioCtx) return;
+  LISTA.forEach((it, i) => {
+    if (pistas[i]) return;
+    const v = videoDeInicio(i); if (!v) return;
+    try {
+      const fuente = audioCtx.createMediaElementSource(v);
+      const f = audioCtx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = MURMULLO.filtro;
+      const g = audioCtx.createGain(); g.gain.value = MURMULLO.volumen;
+      fuente.connect(f).connect(g).connect(master);
+      v.muted = false; v.volume = 1; pistas[i] = { g, f };
+    } catch (e) { pistas[i] = null; }
+  });
+}
+function enfocarSonido(i) {                     // el video bajo el mouse sobresale del murmullo
+  if (!audioCtx || i === focoSonido) return; focoSonido = i;
+  const t = audioCtx.currentTime;
+  pistas.forEach((p, k) => {
+    if (!p) return; const on = k === i;
+    p.g.gain.setTargetAtTime(on ? MURMULLO.foco : (i >= 0 ? MURMULLO.volumen * 0.5 : MURMULLO.volumen), t, 0.3);
+    p.f.frequency.setTargetAtTime(on ? 14000 : MURMULLO.filtro, t, 0.3);
+  });
+}
+const sonidoInicio = document.getElementById("sonidoInicio");
+sonidoInicio.onclick = () => { sonidoOn = !sonidoOn; aplicarSonido(); iniciarMurmullo(); sonidoInicio.blur(); };
+
+// ===== Créditos =====
+const creditos = document.getElementById("creditos"), infoBtn = document.getElementById("infoBtn"), inicioBarra = document.getElementById("inicioBarra");
+function mostrarCreditos(on) { creditos.hidden = !on; infoBtn.setAttribute("aria-expanded", on); }
+infoBtn.onclick = e => { e.stopPropagation(); mostrarCreditos(creditos.hidden); infoBtn.blur(); };
+document.getElementById("creditosCerrar").onclick = () => mostrarCreditos(false);
+let recienCerrados = false;   // el clic que cierra los créditos no abre un video
+document.addEventListener("pointerdown", e => { if (!creditos.hidden && !creditos.contains(e.target) && !infoBtn.contains(e.target)) { mostrarCreditos(false); recienCerrados = true; setTimeout(() => recienCerrados = false, 400); } });
+window.addEventListener("keydown", e => { if (e.key === "Escape" && !creditos.hidden) mostrarCreditos(false); });
+
+// ===== Rastro de lo visto (se olvida al recargar la página) =====
+const vistosInicio = new Set();
+function marcarVisto(it) {
+  vistosInicio.add(it.key);
+  const i = LISTA.indexOf(it); if (i >= 0) { matCampo.uniforms.uVisto.value[i] = 1; }
+}
+
+// ===== Escena =====
+const visor = document.getElementById("visor"), lienzo = document.getElementById("lienzo");
+const cargando = document.getElementById("cargando"), titulo = document.getElementById("titulo");
+const renderer = new THREE.WebGLRenderer({ canvas: lienzo, antialias: false });
+const PR = Math.min(TACTIL ? 1.5 : 2, window.devicePixelRatio || 1);
+renderer.setPixelRatio(PR);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(46, 1, 0.01, 2000);
+const controls = new THREE.OrbitControls(camera, lienzo);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.rotateSpeed = 0.5;
+
+const FRAG = `
+  varying vec4 vC; uniform float uMode;
+  void main(){
+    vec2 c = gl_PointCoord * 2.0 - 1.0; float r2 = dot(c, c);
+    if (r2 > 1.0) discard;
+    if (uMode < 0.5) { if (vC.a < 0.25) discard; gl_FragColor = vec4(vC.rgb, 1.0); }
+    else { float a = vC.a * exp(-r2 * 3.0); if (a < 0.02) discard; gl_FragColor = vec4(vC.rgb, a); }
+  }`;
+
+// Nubes fijas (ML Sharp)
+const matNube = new THREE.ShaderMaterial({
+  uniforms: { uScale: { value: 500 }, uMul: { value: 4 }, uFixed: { value: 1.6 }, uMode: { value: 1 }, uPR: { value: 1 } },
+  vertexShader: `
+    attribute float size; attribute vec4 rgba; varying vec4 vC;
+    uniform float uScale, uMul, uFixed, uMode, uPR;
+    void main(){
+      vC = rgba;
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      gl_Position = projectionMatrix * mv;
+      float d = max(0.0001, -mv.z);
+      gl_PointSize = uMode < 0.5 ? uFixed * uPR : clamp(size * uMul * uScale / d, 1.0, 96.0 * uPR);
+    }`,
+  fragmentShader: FRAG, transparent: true, depthWrite: false,
+});
+
+// ===== Nube expandida (boceto) =====
+const NUBE = {
+  extension: 1.0,    // cuánto se extiende la nube más allá del cuadro (0.5 = medio cuadro por lado)
+  borde: 0.9,        // irregularidad del borde (0 = recto, 1 = máximo)
+  corte: 0.24,       // umbral de "cortar bordes" entre figura y fondo (0 = corta mucho, 0.3 = casi nada)
+  polvoIntensidad: 2, // presencia del polvo (0 = nada, 2 = máximo)
+  armar: false,      // false = las nubes arrancan ya armadas; true = se arman desde un cúmulo
+  aparicion: 5,      // segundos que tarda la nube en armarse al abrir un video (si armar = true)
+  aparicionSiempre: false, // false = solo la primera vez que se abre cada video (o al recargar con F5); true = cada vez
+  dispersion: 1.0,   // cuánto se desarman los puntos inventados hacia afuera
+  polvo: TACTIL ? 7000 : 18000,   // partículas sueltas alrededor del espectador (menos en el celular)
+  densidad: TACTIL ? 0.75 : 1,    // proporción de puntos de la nube (en el celular, menos y un poco más grandes)
+  extMax: 1.25,      // hasta dónde se generan puntos (un poco más que "extension")
+};
+const NOISE = `
+  float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
+    return mix(mix(hash(i), hash(i+vec2(1,0)), u.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), u.x), u.y); }
+  float fbm(vec2 p){ return 0.5*vnoise(p) + 0.3*vnoise(p*2.1+7.3) + 0.2*vnoise(p*4.3+1.7); }
+  vec2 espejo(vec2 u){ u = abs(u); return 1.0 - abs(1.0 - u); }   // continúa la imagen reflejándola en los bordes
+`;
+// Videos con profundidad: mitad izquierda = color, mitad derecha = profundidad (blanco = cerca)
+const matVideo = new THREE.ShaderMaterial({
+  uniforms: { map: { value: null }, uRange: { value: 4 }, uNear: { value: 1 }, uTan: { value: Math.tan(FOV_VIDEO * Math.PI / 360) },
+              uAspect: { value: 4 / 3 }, uRows: { value: 144 }, uTexel: { value: new THREE.Vector2(1/352, 1/144) }, uCorte: { value: NUBE.corte }, uScale: { value: 500 }, uMul: { value: 1.6 }, uFixed: { value: 1.6 },
+              uMode: { value: 1 }, uPR: { value: 1 }, uTime: { value: 0 }, uAparece: { value: 1 }, uCentro: { value: new THREE.Vector3(0, 0, -2) }, uExtMax: { value: NUBE.extMax }, uExt: { value: NUBE.extension }, uBorde: { value: NUBE.borde }, uDisp: { value: NUBE.dispersion } },
+  vertexShader: NOISE + `
+    attribute vec2 uvp; attribute vec3 rnd; varying vec4 vC;
+    uniform sampler2D map; uniform vec2 uTexel; uniform float uRange, uNear, uTan, uAspect, uRows, uScale, uMul, uFixed, uMode, uPR, uCorte, uTime, uExt, uBorde, uDisp, uAparece, uExtMax; uniform vec3 uCentro;
+    float prof(vec2 m){ return texture2D(map, vec2(0.5 + m.x * 0.5, m.y)).r; }
+    void main(){
+      // distancia con signo al borde del cuadro (negativa adentro, positiva afuera)
+      float afuera = max(max(-uvp.x, uvp.x - 1.0), max(-uvp.y, uvp.y - 1.0));
+      float adentro = min(min(uvp.x, 1.0 - uvp.x), min(uvp.y, 1.0 - uvp.y));
+      float sd = afuera > 0.0 ? afuera : -adentro;
+      float n = fbm(uvp * 3.0 + vec2(uTime * 0.04, -uTime * 0.03));
+      // densidad: llena adentro, se deshilacha hacia afuera con un borde irregular que se mueve lento
+      float sdn = sd + (n - 0.5) * uBorde;
+      float dens = (1.0 - smoothstep(-0.12, uExt, sdn)) * (1.0 - smoothstep(uExt, uExtMax, sd));
+      // aparición: cada punto sale de un cúmulo central en su propio momento
+      float e = clamp(uAparece * 1.7 - rnd.z * 0.7, 0.0, 1.0); e = e * e * (3.0 - 2.0 * e);
+      float out01 = smoothstep(-0.15, uExt, sdn);          // transición continua: empieza un poco adentro del cuadro
+      if (rnd.x > dens || e <= 0.0 || (uExt <= 0.0 && sd > 0.0)) { gl_PointSize = 0.0; gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
+      // afuera se "inventa": se toma color y profundidad del cuadro reflejado, con ruido
+      vec2 m = espejo(uvp + (vec2(fbm(uvp * 5.0 + 3.1), fbm(uvp * 5.0 - 2.7)) - 0.5) * 0.12 * out01);
+      float d = prof(m);
+      float z = 1.0 / mix(1.0 / (uNear * uRange), 1.0 / uNear, d);
+      z *= 1.0 + (rnd.y - 0.5) * 0.7 * out01 * uDisp;
+      vec3 p = vec3((uvp.x - 0.5) * 2.0 * z * uTan * uAspect, (uvp.y - 0.5) * 2.0 * z * uTan, -z);
+      float paso = 2.0 * z * uTan / uRows;
+      p += (rnd - 0.5) * paso * (out01 * 70.0 * uDisp);                                   // se desarma hacia afuera
+      p += vec3(sin(uTime * 0.3 + rnd.z * 6.28), cos(uTime * 0.23 + rnd.y * 6.28), 0.0) * paso * 6.0 * out01;  // deriva lenta
+      p = mix(uCentro + (rnd - 0.5) * 0.12 * (0.3 + rnd.y), p, e);          // del cúmulo a su lugar
+      vC = vec4(texture2D(map, vec2(m.x * 0.5, m.y)).rgb, mix(1.0, 0.6, out01) * smoothstep(0.0, 0.25, dens - rnd.x + 0.05) * (0.35 + 0.65 * e));
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      gl_Position = projectionMatrix * mv;
+      gl_PointSize = (uMode < 0.5 ? uFixed * uPR : clamp(paso * uMul * uScale * (1.0 + out01 * 0.5) / max(0.0001, -mv.z), 1.0, 96.0 * uPR)) * mix(0.2, 1.0, e);
+      if (uCorte > 0.0 && out01 < 0.05) {   // corta los "estirados" entre figura y fondo, solo dentro del cuadro
+        vec2 q = vec2(0.5 + uvp.x * 0.5, uvp.y);
+        float mm = max(max(abs(texture2D(map, q + vec2(uTexel.x, 0.0)).r - d), abs(texture2D(map, q - vec2(uTexel.x, 0.0)).r - d)),
+                       max(abs(texture2D(map, q + vec2(0.0, uTexel.y)).r - d), abs(texture2D(map, q - vec2(0.0, uTexel.y)).r - d)));
+        if (mm > uCorte) { gl_PointSize = 0.0; gl_Position = vec4(2.0, 2.0, 2.0, 1.0); }
+      }
+    }`,
+  fragmentShader: FRAG, transparent: true, depthWrite: false,
+});
+// Polvo: partículas sueltas alrededor, con colores tomados del video
+const matPolvo = new THREE.ShaderMaterial({
+  uniforms: { map: { value: null }, uTime: { value: 0 }, uPR: { value: 1 }, uMode: { value: 1 }, uPolvo: { value: NUBE.polvoIntensidad }, uAparece: { value: 1 } },
+  vertexShader: `
+    attribute vec3 rnd; varying vec4 vC; uniform sampler2D map; uniform float uTime, uPR, uPolvo, uAparece;
+    void main(){
+      vC = vec4(texture2D(map, vec2(rnd.x * 0.5, rnd.y)).rgb, (0.22 + 0.25 * rnd.z) * uPolvo * clamp(uAparece * 1.5 - rnd.z * 0.5, 0.0, 1.0));
+      vec3 p = position + 0.03 * vec3(sin(uTime * 0.2 + rnd.x * 40.0), sin(uTime * 0.17 + rnd.y * 40.0), sin(uTime * 0.13 + rnd.z * 40.0));
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      gl_Position = projectionMatrix * mv;
+      gl_PointSize = clamp((2.0 + 4.0 * rnd.z) * uPR / max(0.3, -mv.z), 1.0, 8.0 * uPR);
+    }`,
+  fragmentShader: FRAG, transparent: true, depthWrite: false,
+});
+function geometriaPolvo(centro) {
+  const n = NUBE.polvo, pos = new Float32Array(n * 3), r = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const u = Math.random() * 2 - 1, a = Math.random() * 6.283, s = Math.sqrt(1 - u * u);
+    const rad = 0.4 + Math.pow(Math.random(), 0.6) * 4.5;               // de cerca de la cámara hasta bien lejos
+    pos[i*3] = s * Math.cos(a) * rad * 1.3; pos[i*3+1] = s * Math.sin(a) * rad * 0.8; pos[i*3+2] = centro + u * rad;
+    r[i*3] = Math.random(); r[i*3+1] = Math.random(); r[i*3+2] = Math.random();
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("rnd", new THREE.BufferAttribute(r, 3));
+  return g;
+}
+
+let inicioAparicion = -1e9; const vistos = new Set();
+let objeto = null, actual = null, abierto = false, videoEl = null;
+const cacheNubes = {}, cacheGrillas = {};
+
+async function base64ABuffer(b64) {
+  try { return await (await fetch("data:application/octet-stream;base64," + b64)).arrayBuffer(); }
+  catch (e) { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+}
+async function geometriaNube(key) {
+  if (cacheNubes[key]) return cacheNubes[key];
+  if (!(window.NUBES && window.NUBES[key])) await cargarScript(`nubes/${key}.js`);
+  const d = window.NUBES[key], n = d.n;
+  const buf = await base64ABuffer(d.data); delete d.data;
+  const q = new Uint16Array(buf, 0, n * 3), rgba = new Uint8Array(buf, n * 6, n * 4), sq = new Uint8Array(buf, n * 10, n);
+  const pos = new Float32Array(n * 3), size = new Float32Array(n);
+  const [lx, ly, lz] = d.lo, [hx, hy, hz] = d.hi, k = 1 / 65535;
+  for (let i = 0; i < n; i++) {
+    pos[i*3] = lx + q[i*3] * k * (hx - lx);
+    pos[i*3+1] = -(ly + q[i*3+1] * k * (hy - ly));
+    pos[i*3+2] = -(lz + q[i*3+2] * k * (hz - lz));
+    size[i] = Math.exp(d.sl[0] + sq[i] / 255 * (d.sl[1] - d.sl[0]));
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setAttribute("rgba", new THREE.BufferAttribute(new Uint8Array(rgba), 4, true));
+  g.setAttribute("size", new THREE.BufferAttribute(size, 1));
+  g.computeBoundingSphere();
+  return (cacheNubes[key] = { g, d });
+}
+function geometriaGrilla(w, h) {
+  const E = NUBE.extMax, k = w + "x" + h + "e" + E; if (cacheGrillas[k]) return cacheGrillas[k];
+  w = Math.round(w * NUBE.densidad); h = Math.round(h * NUBE.densidad);
+  const nx = Math.round(w * (1 + 2 * E)), ny = Math.round(h * (1 + 2 * E)), n = nx * ny;
+  const uv = new Float32Array(n * 2), pos = new Float32Array(n * 3), r = new Float32Array(n * 3);
+  let i = 0;
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+    uv[i*2] = -E + (x + 0.5) / w; uv[i*2+1] = 1 + E - (y + 0.5) / h;
+    r[i*3] = Math.random(); r[i*3+1] = Math.random(); r[i*3+2] = Math.random(); i++;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setAttribute("uvp", new THREE.BufferAttribute(uv, 2));
+  g.setAttribute("rnd", new THREE.BufferAttribute(r, 3));
+  return (cacheGrillas[k] = g);
+}
+
+// ===== Sonido =====
+const audio = new Audio(); audio.loop = true; audio.preload = "auto";
+const btnSonido = document.getElementById("sonido");
+let sonidoOn = true;
+function aplicarSonido() {
+  btnSonido.setAttribute("aria-pressed", sonidoOn); btnSonido.title = sonidoOn ? "Silenciar" : "Activar sonido";
+  sonidoInicio.setAttribute("aria-pressed", sonidoOn); sonidoInicio.title = sonidoOn ? "Silenciar" : "Activar sonido";
+  if (master) master.gain.setTargetAtTime(sonidoOn ? 1 : 0, audioCtx.currentTime, 0.1);
+  if (videoEl) videoEl.muted = !sonidoOn;
+  if (actual && actual.audio) { if (sonidoOn) audio.play().catch(() => {}); else audio.pause(); }
+}
+btnSonido.onclick = () => { sonidoOn = !sonidoOn; aplicarSonido(); btnSonido.blur(); };
+
+// ===== Pausa (barra espaciadora) y línea de tiempo =====
+const linea = document.getElementById("linea"), pista = document.getElementById("pista"), relleno = document.getElementById("relleno"), cabeza = document.getElementById("cabeza");
+const tActual = document.getElementById("tActual"), tTotal = document.getElementById("tTotal");
+const mmss = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+function alternarPausa() { if (!videoEl) return; if (videoEl.paused) videoEl.play().catch(() => {}); else videoEl.pause(); }
+let arrastrando = false;
+function buscar(e) {
+  if (!videoEl || !isFinite(videoEl.duration)) return;
+  const r = pista.getBoundingClientRect(), f = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  videoEl.currentTime = f * videoEl.duration; actualizarLinea();
+}
+pista.addEventListener("pointerdown", e => { arrastrando = true; pista.classList.add("arrastrando"); pista.setPointerCapture(e.pointerId); buscar(e); });
+pista.addEventListener("pointermove", e => { if (arrastrando) buscar(e); });
+pista.addEventListener("pointerup", e => { arrastrando = false; pista.classList.remove("arrastrando"); });
+function actualizarLinea() {
+  if (!videoEl || linea.hidden) return;
+  const d = videoEl.duration, f = isFinite(d) && d > 0 ? videoEl.currentTime / d : 0;
+  relleno.style.width = cabeza.style.left = (f * 100) + "%";
+  tActual.textContent = mmss(videoEl.currentTime); tTotal.textContent = mmss(d);
+  linea.classList.toggle("pausado", videoEl.paused);
+}
+
+// ===== Abrir / cerrar =====
+const modo = { value: "1" },   // siempre en modo "manchas"
+      tam = document.getElementById("tam"), dens = document.getElementById("dens"), rel = document.getElementById("rel");
+function mat() { return actual && actual.tipo === "video" ? matVideo : matNube; }
+
+async function abrir(it) {
+  aviso.classList.remove("visible");
+  // el sonido arranca dentro del clic para que el navegador lo permita
+  audio.pause(); actual = it;
+  if (it.tipo === "nube" && it.audio) { audio.src = it.audio; audio.currentTime = 0; audio.volume = VOLUMEN; if (sonidoOn) audio.play().catch(() => {}); }
+  if (videoEl) { videoEl.pause(); videoEl = null; }
+  if (it.tipo === "video") {
+    videoEl = prepararVideo(document.createElement("video"));
+    videoEl.loop = true; videoEl.muted = !sonidoOn; videoEl.volume = VOLUMEN;
+  }
+  btnSonido.hidden = !(it.tipo === "video" || it.audio);
+  linea.hidden = true;                                   // sin línea de tiempo: el video transcurre en loop
+  clearTimeout(tmRelato); relato.hidden = true;          // el texto completo queda para el clic en el nombre
+  iniciarFrases(it.texto);
+  marcarVisto(it); mostrarCreditos(false); document.body.classList.add("viendo");
+  despertar();
+  if (document.activeElement) document.activeElement.blur();      // que la barra espaciadora no "apriete" botones
+  document.getElementById("lDens").hidden = it.tipo === "video";
+  document.getElementById("lRel").hidden = it.tipo !== "video";
+
+  vidsCampo.forEach(v => v && v.pause()); silenciarMurmullo(true);
+  abierto = true; visor.classList.add("abierto"); visor.setAttribute("aria-hidden", "false");
+  renderer.setClearColor(getComputedStyle(document.documentElement).getPropertyValue("--fondo-visor").trim() || "#000");
+  titulo.textContent = it.titulo; cargando.style.display = "flex"; cargando.textContent = "Cargando…";
+  if (objeto) { scene.remove(objeto); objeto = null; }
+  redimensionar();
+  try {
+    if (it.tipo === "video") {
+      if (!(window.VIDEOS && window.VIDEOS[it.key])) await cargarScript(`videos/${it.key}.js`);
+      const V = window.VIDEOS[it.key];
+      videoEl.src = V.src;
+      await videoEl.play().catch(async () => {                 // si el navegador no deja arrancar con sonido, arranca en silencio
+        videoEl.muted = true; sonidoOn = false; aplicarSonido(); await videoEl.play().catch(() => {}); });
+      const tex = new THREE.VideoTexture(videoEl); tex.minFilter = tex.magFilter = THREE.LinearFilter;
+      matVideo.uniforms.map.value = tex; matVideo.uniforms.uAspect.value = V.aspect; matVideo.uniforms.uRows.value = V.h * NUBE.densidad; matVideo.uniforms.uTexel.value.set(1 / (2 * V.w), 1 / V.h);
+      objeto = new THREE.Group();
+      const nube = new THREE.Points(geometriaGrilla(V.w, V.h), matVideo); nube.frustumCulled = false; objeto.add(nube);
+      matPolvo.uniforms.map.value = tex;
+      const polvo = new THREE.Points(geometriaPolvo(-matVideo.uniforms.uNear.value * Math.sqrt(matVideo.uniforms.uRange.value)), matPolvo); polvo.frustumCulled = false; objeto.add(polvo);
+      titulo.textContent = it.titulo;
+    } else {
+      const { g, d } = await geometriaNube(it.key);
+      if (actual !== it) return;
+      objeto = new THREE.Points(g, matNube); it._d = d;
+      titulo.textContent = it.titulo;
+    }
+    if (actual !== it) return;
+    scene.add(objeto);
+    if (it.tipo === "video") {                       // aparición: solo la primera vez que se abre cada video (salvo aparicionSiempre)
+      if (NUBE.armar && (NUBE.aparicionSiempre || !vistos.has(it.key))) { inicioAparicion = performance.now(); vistos.add(it.key); }
+      else inicioAparicion = -1e9;
+    }
+    aplicarModo(); aplicarDensidad(); vistaOriginal();
+    cargando.style.display = "none";
+  } catch (e) { cargando.textContent = e.message; }
+}
+// ===== Texto de cada video: aparece letra por letra y queda fijo =====
+const relato = document.getElementById("relato"), relatoTexto = document.getElementById("relatoTexto");
+document.getElementById("relatoCerrar").onclick = e => { clearTimeout(tmRelato); relato.hidden = true; e.currentTarget.blur(); };
+// clic en el nombre del video: vuelve a mostrar el texto completo (o lo cierra si está abierto)
+function alternarRelato() {
+  if (!actual || !actual.texto) return;
+  if (!relato.hidden) { clearTimeout(tmRelato); relato.hidden = true; return; }
+  clearTimeout(tmRelato); relato.classList.remove("escribiendo"); relatoTexto.textContent = actual.texto; relato.hidden = false;
+}
+const RELATO = { demora: 1800, porLetra: 32, pausaComa: 180, pausaPunto: 420 };   // milisegundos
+let tmRelato = null;
+function escribirRelato(texto) {
+  clearTimeout(tmRelato); relatoTexto.textContent = ""; relato.classList.remove("escribiendo");
+  if (!texto) { relato.hidden = true; return; }
+  relato.hidden = false; relatoTexto.setAttribute("aria-label", texto);
+  let i = 0;
+  const paso = () => {
+    i++; relatoTexto.textContent = texto.slice(0, i);
+    if (i >= texto.length) { relato.classList.remove("escribiendo"); return; }
+    const c = texto[i - 1];
+    tmRelato = setTimeout(paso, RELATO.porLetra + (c === "," || c === ":" ? RELATO.pausaComa : 0) + (c === "." ? RELATO.pausaPunto : 0));
+  };
+  relato.classList.add("escribiendo");
+  tmRelato = setTimeout(paso, RELATO.demora);
+}
+
+function cerrar() {
+  clearTimeout(tmRelato); relato.hidden = true; limpiarFrases(); document.body.classList.remove("viendo", "quieto"); visor.classList.remove("abajo", "pausado");
+  audio.pause(); if (videoEl) { videoEl.pause(); videoEl.removeAttribute("src"); videoEl.load(); videoEl = null; }
+  abierto = false; visor.classList.remove("abierto"); visor.setAttribute("aria-hidden", "true");
+  vidsCampo.forEach(v => v && v.play().catch(() => {})); silenciarMurmullo(false);
+  focoTactil = focoObj = -1; etiqueta.hidden = true;
+}
+document.getElementById("cerrar").onclick = cerrar;
+// Shift + botón del medio también desplaza, como en los programas 3D (Blender, etc.)
+lienzo.addEventListener("pointerdown", e => {
+  // (OrbitControls invierte girar/desplazar cuando hay Shift, por eso se le asigna "girar")
+  controls.mouseButtons.MIDDLE = (e.button === 1 && e.shiftKey) ? THREE.MOUSE.ROTATE : THREE.MOUSE.DOLLY;
+}, true);
+
+// ===== Ayuda y modo "quieto" (la interfaz se esconde si no se mueve el mouse) =====
+const ayuda = document.getElementById("ayuda");
+let ayudaVista = false, tmQuieto, tmAyuda;
+function despertar() {
+  visor.classList.remove("quieto"); document.body.classList.remove("quieto"); clearTimeout(tmQuieto);
+  tmQuieto = setTimeout(() => {
+    if (!abierto) return;
+    if (!arrastrando && !(videoEl && videoEl.paused) && creditos.hidden && !visor.classList.contains("abajo")) { visor.classList.add("quieto"); document.body.classList.add("quieto"); }
+    else despertar();                                    // si todavía no se puede esconder, vuelve a probar
+  }, 2800);
+}
+visor.addEventListener("pointermove", e => { if (e.pointerType !== "touch") visor.classList.toggle("abajo", e.clientY > window.innerHeight - 170); despertar(); });
+// celular: un toque corto en la pantalla muestra los controles unos segundos (arrastrar sigue girando la nube)
+let toque = null, tmAbajo;
+lienzo.addEventListener("pointerdown", e => { if (e.pointerType === "touch") toque = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+lienzo.addEventListener("pointerup", e => {
+  if (!toque || e.pointerType !== "touch") return;
+  const corto = performance.now() - toque.t < 350 && Math.hypot(e.clientX - toque.x, e.clientY - toque.y) < 12; toque = null;
+  if (!corto) return;
+  visor.classList.add("abajo"); despertar(); clearTimeout(tmAbajo);
+  tmAbajo = setTimeout(() => { visor.classList.remove("abajo"); despertar(); }, 4000);
+});
+const btnPausa = document.getElementById("pausa");
+btnPausa.onclick = () => { alternarPausa(); btnPausa.blur(); clearTimeout(tmAbajo); tmAbajo = setTimeout(() => { visor.classList.remove("abajo"); despertar(); }, 4000); };
+visor.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") visor.classList.remove("abajo"); });
+visor.addEventListener("pointerdown", despertar);
+window.addEventListener("keydown", () => { if (abierto) despertar(); });
+window.addEventListener("keydown", e => {
+  if (!abierto) return;
+  if (e.key === "Escape") cerrar();
+  else if (e.code === "Space" || e.key === " ") { e.preventDefault(); alternarPausa(); }
+});
+
+// ===== Cámara =====
+function vistaOriginal() {
+  if (!actual) return;
+  if (actual.tipo === "video") {
+    camera.fov = FOV_VIDEO; camera.position.set(0, 0, 0);
+    const u = matVideo.uniforms, zc = u.uNear.value * Math.sqrt(u.uRange.value);
+    controls.target.set(0, 0, -zc);
+    // pantalla más angosta que el video (celular vertical): la cámara se aleja para que entre casi todo el ancho
+    const alejar = Math.max(1, u.uAspect.value * 0.85 / camera.aspect);
+    camera.position.set(0, 0, zc * (alejar - 1));
+  } else {
+    const d = actual._d; if (!d) return;
+    camera.fov = d.fov; camera.position.set(0, 0, 0); controls.target.set(0, 0, -d.zmed);
+  }
+  camera.updateProjectionMatrix(); controls.update(); ajustarEscala();
+}
+function ajustarEscala() {
+  const h = lienzo.clientHeight * renderer.getPixelRatio();
+  const s = h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+  for (const m of [matNube, matVideo]) { m.uniforms.uScale.value = s; m.uniforms.uPR.value = renderer.getPixelRatio(); }
+}
+function redimensionar() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); ajustarEscala();
+}
+window.addEventListener("resize", redimensionar);
+// al girar el celular, vuelve a encuadrar
+matchMedia("(orientation: portrait)").addEventListener("change", () => setTimeout(() => { redimensionar(); if (abierto) vistaOriginal(); }, 250));
+
+// ===== Controles =====
+function aplicarModo() {
+  const m = +modo.value, M = mat(), esVideo = M === matVideo;
+  M.uniforms.uMode.value = m; M.transparent = m === 1; M.depthWrite = m !== 1; M.needsUpdate = true;
+  tam.min = m === 1 ? 0.3 : 0.5; tam.max = m === 1 ? (esVideo ? 6 : 12) : 6;
+  tam.value = m === 1 ? M.uniforms.uMul.value : M.uniforms.uFixed.value;
+}
+tam.oninput = () => { const M = mat(); if (+modo.value === 1) M.uniforms.uMul.value = +tam.value; else M.uniforms.uFixed.value = +tam.value; };
+function aplicarDensidad() { if (objeto && actual.tipo === "nube") objeto.geometry.setDrawRange(0, Math.round(objeto.geometry.attributes.position.count * dens.value / 100)); }
+dens.oninput = aplicarDensidad;
+rel.oninput = () => { matVideo.uniforms.uRange.value = +rel.value; };
+
+// ===== Frases del texto flotando en el espacio 3D, de a una =====
+const FRASES = { activas: true, tamano: 1.0, demora: 2.5, porLetra: 0.05, minimo: 3, salida: 1.4, pausa: 1.2, pausaFinal: 5 };   // segundos
+// Cómo se escribe cada frase (tiempos en segundos)
+const TIPEO = {
+  letra: 0.085,          // tiempo promedio entre letras
+  coma: 0.45,            // pausa después de una coma
+  punto: 0.9,            // pausa después de un punto
+  dudaPalabra: 0.12,     // probabilidad de dudar antes de una palabra (0 a 1)
+  duda: [0.4, 1.6],      // cuánto dura una duda (mínimo, máximo)
+  retroceso: 0.035,      // probabilidad de volver atrás y reescribir unas letras
+  error: 0.02,           // probabilidad de equivocarse de letra y corregirla
+  borrar: 0.07,          // velocidad al borrar
+  sangria: 9,            // cuánto se corre cada línea respecto de la anterior (px)
+  ondula: 2.2,           // cuánto suben o bajan las letras (px)
+  giro: 0.05,            // cuánto se inclina cada letra
+  espaciado: 1.6,        // irregularidad del espacio entre letras (px)
+  brillo: 0.55,          // intensidad del brillo alrededor del texto (0 = nada)
+};
+let frases = [], fraseI = 0, fraseT = 0, fraseFase = "espera", fraseEspera = 0, fraseSprite = null, fraseLado = 1, ultimoT = performance.now();
+function partirFrases(t) { return (t.match(/[^.!?…]+[.!?…]+["”»)]*|[^.!?…]+$/g) || []).map(x => x.trim()).filter(Boolean); }
+// cada frase es un plano fijo en el espacio (no gira hacia la cámara); se escribe letra por letra, con dudas
+function azarSemilla(seed) { let a = seed >>> 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// la "partitura" de la escritura: cada paso agrega o borra una letra, con su propio tiempo (en segundos)
+function partitura(txt, R) {
+  const T = TIPEO, pasos = []; let rafaga = 0;
+  const vecinas = "asdfghjklqwertyuiopzxcvbnm";
+  const espera = s => pasos.push({ t: s, op: "nada" });
+  for (let i = 0; i < txt.length; i++) {
+    const c = txt[i], antes = txt[i - 1] || " ";
+    if (antes === " " && R() < T.dudaPalabra) espera(T.duda[0] + R() * (T.duda[1] - T.duda[0]));      // duda antes de una palabra
+    if (rafaga <= 0 && R() < 0.08) rafaga = 3 + Math.floor(R() * 9);                                       // tramo rápido
+    let d = T.letra * Math.exp((R() - 0.5) * 1.1);
+    if (rafaga > 0) { d *= 0.45; rafaga--; }
+    if (c === " ") d *= 1.3;
+    // a veces se equivoca de letra y la corrige
+    if (/[a-záéíóúñ]/i.test(c) && R() < T.error) {
+      pasos.push({ t: d, op: "pon", ch: vecinas[Math.floor(R() * vecinas.length)] });
+      espera(0.18 + R() * 0.35); pasos.push({ t: T.borrar, op: "borra" }); d = T.letra * 1.2;
+    }
+    pasos.push({ t: d, op: "pon", ch: c });
+    // a veces vuelve atrás: borra unas letras ya escritas de la palabra y las reescribe
+    const finPalabra = txt[i + 1] === " " || i === txt.length - 1;
+    if (!finPalabra && /[a-záéíóúñ]/i.test(c) && R() < T.retroceso) {
+      let k = 1 + Math.floor(R() * 3); let w = i; while (w > 0 && txt[w - 1] !== " ") w--; k = Math.min(k, i - w + 1);
+      espera(0.25 + R() * 0.6);
+      for (let b = 0; b < k; b++) pasos.push({ t: T.borrar * (0.8 + R() * 0.5), op: "borra" });
+      espera(0.2 + R() * 0.5);
+      for (let b = i - k + 1; b <= i; b++) pasos.push({ t: T.letra * (0.7 + R() * 0.6), op: "pon", ch: txt[b] });
+    }
+    if (/[,;:]/.test(c)) espera(T.coma * (0.6 + R() * 0.8));
+    if (/[.!?…]/.test(c)) espera(T.punto * (0.6 + R() * 0.8));
+  }
+  return pasos;
+}
+function crearFrase(txt) {
+  const R = azarSemilla(Math.floor(Math.random() * 1e9));
+  const c = document.createElement("canvas"), x = c.getContext("2d");
+  const fs = 46, pad = 46, maxW = 860, lh = fs * 1.34, fuente = `400 ${fs}px "Redaction 50", Georgia, serif`;
+  x.font = fuente;
+  // ubicación de cada letra, calculada de antemano: líneas que se van corriendo, letras apenas desalineadas
+  const lineas = []; let cur = "";
+  for (const w of txt.split(/\s+/)) { const t = cur ? cur + " " + w : w; if (x.measureText(t).width > maxW && cur) { lineas.push(cur); cur = w; } else cur = t; }
+  if (cur) lineas.push(cur);
+  const pos = []; let ancho = 0, corr = 0;
+  lineas.forEach((l, li) => {
+    corr += li === 0 ? 0 : (TIPEO.sangria * (0.4 + R()));                   // cada línea un poco más corrida, como en tu dibujo
+    let px = corr + (R() - 0.5) * 6;
+    const dy = (R() - 0.5) * TIPEO.ondula * 3;
+    for (let k = 0; k < l.length; k++) {
+      const ch = l[k];
+      pos.push({ x: px, y: li * lh + dy + (R() - 0.5) * TIPEO.ondula, r: (R() - 0.5) * TIPEO.giro });
+      px += x.measureText(ch).width + (R() - 0.5) * TIPEO.espaciado;
+    }
+    ancho = Math.max(ancho, px);
+    if (li < lineas.length - 1) pos.push({ x: px, y: li * lh + dy, r: 0 });   // el espacio que separa las líneas
+  });
+  const texto = lineas.join(" ");
+  c.width = Math.ceil(ancho + pad * 2); c.height = Math.ceil(lineas.length * lh + pad * 2);
+  const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
+  const a = FRASES.tamano * (c.width / 900);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(a, a * c.height / c.width),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, side: THREE.DoubleSide, opacity: 1 }));
+  m.renderOrder = 20;
+  const z = -(1.25 + Math.random() * 0.8), tan = Math.tan(FOV_VIDEO * Math.PI / 360);
+  fraseLado = -fraseLado;
+  m.position.set(fraseLado * (0.15 + Math.random() * 0.35) * -z * tan * 1.1, (Math.random() * 2 - 1) * 0.45 * -z * tan, z);
+  m.rotation.y = -Math.atan2(m.position.x, -m.position.z) * 0.6;
+  const pasos = partitura(texto, R);
+  m.userData = { c, x, fuente, pos, pad, fs, pasos, paso: 0, reloj: 0, escrito: [], listo: false };
+  return m;
+}
+function dibujarTexto(m, cursor) {
+  const d = m.userData, x = d.x;
+  x.clearRect(0, 0, d.c.width, d.c.height); x.font = d.fuente; x.textBaseline = "top";
+  // brillo leve alrededor de las letras: una pasada con resplandor y otra nítida encima
+  for (const pasada of [0, 1]) {
+    x.shadowColor = pasada === 0 ? `rgba(255,255,255,${TIPEO.brillo})` : "rgba(0,0,0,.6)";
+    x.shadowBlur = pasada === 0 ? 18 : 4;
+    x.fillStyle = pasada === 0 ? "rgba(255,255,255,.55)" : "#f6f6f2";
+    d.escrito.forEach((ch, i) => {
+      const p = d.pos[i]; if (!p) return;
+      x.save(); x.translate(d.pad + p.x, d.pad + p.y); x.rotate(p.r); x.fillText(ch, 0, 0); x.restore();
+    });
+  }
+  if (cursor) {                                       // cursor fino mientras escribe
+    const i = d.escrito.length, p = d.pos[Math.min(i, d.pos.length - 1)] || { x: 0, y: 0 };
+    const px = d.pad + (i < d.pos.length ? p.x : p.x + x.measureText(d.escrito[i - 1] || " ").width);
+    x.shadowBlur = 8; x.shadowColor = "rgba(255,255,255,.6)"; x.fillStyle = "rgba(255,255,255,.75)";
+    x.fillRect(px + 1, d.pad + p.y + d.fs * 0.08, 2, d.fs * 0.95);
+  }
+  x.shadowBlur = 0; m.material.map.needsUpdate = true;
+}
+function avanzarTipeo(m, dt) {                       // ejecuta los pasos de la partitura que ya tocan
+  const d = m.userData; d.reloj += dt; let cambio = false;
+  while (d.paso < d.pasos.length && d.reloj >= d.pasos[d.paso].t) {
+    const p = d.pasos[d.paso]; d.reloj -= p.t; d.paso++;
+    if (p.op === "pon") d.escrito.push(p.ch); else if (p.op === "borra") d.escrito.pop();
+    cambio = true;
+  }
+  const parpadeo = Math.floor(performance.now() / 530) % 2 === 0;
+  if (cambio || d.parpadeo !== parpadeo) { d.parpadeo = parpadeo; dibujarTexto(m, d.paso < d.pasos.length ? true : parpadeo); }
+  return d.paso >= d.pasos.length;
+}
+function quitarSprite() { if (fraseSprite) { scene.remove(fraseSprite); fraseSprite.geometry.dispose(); fraseSprite.material.map.dispose(); fraseSprite.material.dispose(); fraseSprite = null; } }
+function limpiarFrases() { quitarSprite(); frases = []; }
+function iniciarFrases(texto) { limpiarFrases(); if (!texto || !FRASES.activas) return; frases = partirFrases(texto); fraseI = 0; fraseT = 0; fraseFase = "espera"; fraseEspera = FRASES.demora; }
+function actualizarFrases() {
+  const ahora = performance.now(), dt = Math.min(0.1, (ahora - ultimoT) / 1000); ultimoT = ahora;
+  if (!frases.length || !videoEl || videoEl.paused) return;      // en pausa, las frases también esperan
+  fraseT += dt;
+  if (fraseFase === "espera" && fraseT >= fraseEspera) { fraseSprite = crearFrase(frases[fraseI]); scene.add(fraseSprite); fraseFase = "entra"; fraseT = 0; }
+  else if (fraseFase === "entra") { if (avanzarTipeo(fraseSprite, dt)) { fraseFase = "queda"; fraseT = 0; } }
+  else if (fraseFase === "queda") {
+    avanzarTipeo(fraseSprite, 0);                                          // el cursor sigue titilando un rato
+    if (fraseT >= Math.max(FRASES.minimo, frases[fraseI].length * FRASES.porLetra)) { dibujarTexto(fraseSprite, false); fraseFase = "sale"; fraseT = 0; }
+  }
+  else if (fraseFase === "sale") {
+    fraseSprite.material.opacity = Math.max(0, 1 - fraseT / FRASES.salida);
+    if (fraseT >= FRASES.salida) { quitarSprite(); fraseI++; fraseEspera = FRASES.pausa; if (fraseI >= frases.length) { fraseI = 0; fraseEspera = FRASES.pausaFinal; } fraseFase = "espera"; fraseT = 0; }
+  }
+}
+
+const reloj = new THREE.Clock();
+// ===== Fondo del inicio: una sola nube que gira; al entrar aparecen todas =====
+const FONDO = {
+  video: null,          // clave de un video para que sea siempre el mismo (ej. "0034"); null = van pasando todos
+  duracion: 16,         // segundos que queda cada video antes de pasar al siguiente
+  fundido: 1.8,         // segundos del fundido entre un video y otro
+  velocidad: 0.025,     // velocidad de giro (muy lento)
+  distancia: 2.5,       // distancia de la cámara a la nube
+};
+let fondoActivo = false, fondoObjeto = null, fondoVideo = null, fondoOrden = [], fondoI = 0, tmFondo = null;
+function soltarFondo() {
+  if (fondoObjeto) { scene.remove(fondoObjeto); fondoObjeto = null; }
+  if (fondoVideo) { fondoVideo.pause(); fondoVideo.removeAttribute("src"); fondoVideo.load(); fondoVideo = null; }
+  if (matVideo.uniforms.map.value && matVideo.uniforms.map.value.isVideoTexture) matVideo.uniforms.map.value.dispose();
+}
+async function cargarFondo(it) {
+  try { if (!(window.VIDEOS && window.VIDEOS[it.key])) await cargarScript(`videos/${it.key}.js`); } catch (e) { return false; }
+  if (!document.body.classList.contains("en-inicio")) return false;
+  soltarFondo();
+  const V = window.VIDEOS[it.key];
+  fondoVideo = prepararVideo(document.createElement("video"));
+  fondoVideo.muted = true; fondoVideo.setAttribute("muted", ""); fondoVideo.loop = true; fondoVideo.src = V.src;
+  fondoVideo.currentTime = 0; fondoVideo.play().catch(() => {});
+  const tex = new THREE.VideoTexture(fondoVideo); tex.minFilter = tex.magFilter = THREE.LinearFilter;
+  const u = matVideo.uniforms;
+  u.map.value = tex; u.uAspect.value = V.aspect; u.uRows.value = V.h * NUBE.densidad; u.uTexel.value.set(1 / (2 * V.w), 1 / V.h);
+  matPolvo.uniforms.map.value = tex;
+  fondoObjeto = new THREE.Group();
+  const nube = new THREE.Points(geometriaGrilla(V.w, V.h), matVideo); nube.frustumCulled = false; fondoObjeto.add(nube);
+  const polvo = new THREE.Points(geometriaPolvo(-u.uNear.value * Math.sqrt(u.uRange.value)), matPolvo); polvo.frustumCulled = false; fondoObjeto.add(polvo);
+  scene.add(fondoObjeto);
+  inicioAparicion = NUBE.armar ? performance.now() : -1e9;   // ya armada (o desde el cúmulo si NUBE.armar)
+  return true;
+}
+async function pasarFondo() {                           // funde al negro, cambia de video y vuelve a aparecer
+  if (!fondoActivo) return;
+  visor.classList.add("cambiando");
+  await new Promise(r => setTimeout(r, FONDO.fundido * 1000));
+  if (!fondoActivo) return;
+  fondoI = (fondoI + 1) % fondoOrden.length;
+  await cargarFondo(fondoOrden[fondoI]);
+  visor.classList.remove("cambiando");
+  tmFondo = setTimeout(pasarFondo, FONDO.duracion * 1000);
+}
+async function iniciarFondo() {
+  const lista = LISTA.filter(x => x.tipo === "video");
+  const fijo = lista.find(x => x.key === FONDO.video);
+  fondoOrden = fijo ? [fijo] : lista.slice().sort(() => Math.random() - 0.5);
+  fondoI = 0;
+  if (!(await cargarFondo(fondoOrden[0]))) return;
+  const u = matVideo.uniforms;
+  u.uMode.value = 1; matVideo.transparent = true; matVideo.depthWrite = false; matVideo.needsUpdate = true;
+  camera.fov = FOV_VIDEO;
+  if (TACTIL) renderer.setPixelRatio(0.5);
+  visor.classList.add("fondo"); fondoActivo = true; redimensionar();
+  if (fondoOrden.length > 1) tmFondo = setTimeout(pasarFondo, FONDO.duracion * 1000);
+}
+function terminarFondo() {
+  if (!fondoActivo) return;
+  clearTimeout(tmFondo);
+  visor.classList.add("saliendo");
+  setTimeout(() => { fondoActivo = false; soltarFondo(); visor.classList.remove("fondo", "saliendo", "cambiando"); renderer.setPixelRatio(PR); redimensionar(); }, 1200);
+}
+iniciarFondo();
+
+renderer.setAnimationLoop(() => {
+  if (fondoActivo && !abierto) {
+    const t = reloj.getElapsedTime(), u = matVideo.uniforms, zc = u.uNear.value * Math.sqrt(u.uRange.value), a = t * FONDO.velocidad;
+    camera.position.set(Math.sin(a) * FONDO.distancia, 0.25 * Math.sin(t * 0.17), -zc + Math.cos(a) * FONDO.distancia);
+    camera.lookAt(0, 0, -zc);
+    u.uTime.value = matPolvo.uniforms.uTime.value = t;
+    u.uAparece.value = matPolvo.uniforms.uAparece.value = Math.min(1, (performance.now() - inicioAparicion) / (NUBE.aparicion * 1000));
+    u.uCentro.value.set(0, 0, -zc);
+    matPolvo.uniforms.uPR.value = renderer.getPixelRatio();
+    renderer.render(scene, camera);
+    return;
+  }
+  if (!abierto) return;
+  if (controls.autoRotate) controls.autoRotateSpeed = Math.sin(reloj.getElapsedTime() * 0.5) * 1.6;
+  controls.update();
+  visor.classList.toggle("pausado", !!(abierto && videoEl && videoEl.paused));
+  { const p = !!(videoEl && videoEl.paused); btnPausa.querySelector(".i-pausa").style.display = p ? "none" : ""; btnPausa.querySelector(".i-play").style.display = p ? "" : "none"; }
+  actualizarFrases();
+  matVideo.uniforms.uTime.value = matPolvo.uniforms.uTime.value = reloj.getElapsedTime();
+  matVideo.uniforms.uAparece.value = matPolvo.uniforms.uAparece.value = Math.min(1, (performance.now() - inicioAparicion) / (NUBE.aparicion * 1000));
+  matVideo.uniforms.uCentro.value.set(0, 0, -matVideo.uniforms.uNear.value * Math.sqrt(matVideo.uniforms.uRange.value));
+  matPolvo.uniforms.uPR.value = renderer.getPixelRatio();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
