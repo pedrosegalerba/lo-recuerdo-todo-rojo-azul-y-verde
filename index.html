@@ -24,7 +24,7 @@
   --margen:32px;           /* misma distancia a los bordes para el rótulo y los íconos */
   --velo:.12;
   --fondo-blur:5px;        /* cuánto se desenfoca la nube de fondo del inicio */
-  --fondo-gris:1;          /* nube de fondo del inicio en blanco y negro (1 = blanco y negro, 0 = color) */
+  --fondo-gris:0;          /* nube de fondo del inicio en blanco y negro (1 = blanco y negro, 0 = color) */
   --fondo-luz:.85;         /* brillo de la nube de fondo del inicio */              /* oscuridad de la pantalla de inicio sobre la nube de fondo (0 = nada, 1 = negro) */
   --fuente:"Redaction 50",Georgia,"Times New Roman",serif;
 }
@@ -97,7 +97,7 @@ body.tactil #creditos .solo-mouse{display:none}
 body.tactil #pausa{display:flex;grid-column:3;justify-self:end}
 body.tactil #visor.fondo #lienzo{filter:grayscale(var(--fondo-gris)) blur(3px) brightness(var(--fondo-luz))}
 #etiqueta small{color:var(--texto-suave);font-size:11px;margin-left:6px}
-@media (max-width:600px){#inicio h1{font-size:min(5vw,26px)}}
+@media (max-width:600px){#inicio h1{font-size:min(5.2vw,26px)}}
 #visor.pausado .titulo::after{content:"  · en pausa";color:var(--texto-suave)}
 #creditos{position:fixed;top:calc(var(--margen) + 36px + env(safe-area-inset-top,0px));right:calc(var(--margen) + env(safe-area-inset-right,0px));z-index:31;
   width:min(360px,calc(100vw - 32px));max-height:calc(100vh - var(--margen) - 60px);overflow:auto;background:rgba(0,0,0,.84);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
@@ -108,7 +108,13 @@ body.tactil #visor.fondo #lienzo{filter:grayscale(var(--fondo-gris)) blur(3px) b
 #creditos .pie{margin:14px 0 0;font-size:11px;letter-spacing:.04em}
 #creditosCerrar{position:absolute;top:8px;right:8px;width:26px;height:26px}
 
-#inicio h1{position:relative;white-space:nowrap;font-size:clamp(18px,2.6vw,32px)}   /* una sola línea */
+/* título como en la tapa: minúscula, itálica, las palabras a distintas alturas */
+#inicio h1{position:relative;white-space:nowrap;font-size:clamp(17px,2.2vw,30px);font-style:italic;width:16em;height:2.95em}
+#inicio h1 span{position:absolute;left:0;top:0;line-height:1}
+#inicio h1 span:nth-child(2){left:5.10em;top:1.16em}
+#inicio h1 span:nth-child(3){left:8.04em;top:.69em}
+#inicio h1 span:nth-child(4){left:10.59em;top:1.33em}
+#inicio h1 span:nth-child(5){left:12.71em;top:1.90em}
 #inicio h1.glitch{color:transparent}            /* el texto queda (para lectores de pantalla) pero se ve el canvas */
 #inicio h1 canvas{position:absolute;pointer-events:none}
 
@@ -186,7 +192,7 @@ button[aria-pressed="true"]{background:rgba(255,255,255,.2)}
 <!-- ===== Pantalla de inicio: cambiá los textos acá ===== -->
 <div id="inicio" role="button" tabindex="0" aria-label="Entrar">
   <div class="rotulo">
-    <h1>Lo recuerdo todo rojo, azul y verde</h1>
+    <h1 aria-label="lo recuerdo todo rojo, azul y verde"><span>lo recuerdo</span> <span>todo</span> <span>rojo,</span> <span>azul</span> <span>y verde</span></h1>
     <p class="datos">Nueve videos de un archivo familiar</p>
     <span class="entrar">hacé clic para entrar</span>
   </div>
@@ -600,9 +606,13 @@ const GLITCH = {
     // título en blanco, nítido
     const base = lienzo(W, H), b = base.getContext("2d");
     b.scale(dpr, dpr); b.fillStyle = "#fff"; b.textAlign = "center"; b.textBaseline = "middle";
-    b.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    b.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     if ("letterSpacing" in b) b.letterSpacing = cs.letterSpacing;
-    b.fillText(h1.textContent.trim(), W / dpr / 2, H / dpr / 2);
+    b.textAlign = "left";                                // cada palabra donde la ubica el CSS (como en la tapa)
+    for (const sp of h1.querySelectorAll("span")) {
+      const rs = sp.getBoundingClientRect();
+      b.fillText(sp.textContent, rs.left - r.left + PAD, rs.top - r.top + PAD + rs.height / 2);
+    }
     // versiones pixeladas, de bloque 1 (nítido) a pixelMax
     niveles = [];
     const pasos = 8;
@@ -616,7 +626,7 @@ const GLITCH = {
       niveles.push(grande);
     }
     F = lienzo(W, H);
-    tint = ["#f00", "#0f0", "#00f"].map(col => ({ col, c: lienzo(W, H) }));
+    tint = ["#C34364", "#77E98F", "#54EFFE"].map(col => ({ col, c: lienzo(W, H) }));   // frambuesa, verde y cian de la tapa
     if (!cv.parentNode) h1.appendChild(cv);
     h1.classList.add("glitch");
   }
