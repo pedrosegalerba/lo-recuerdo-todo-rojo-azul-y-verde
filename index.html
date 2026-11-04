@@ -61,6 +61,8 @@ body{background:var(--fondo);color:var(--texto);font-family:var(--fuente);font-s
 .rotulo{margin-top:calc(10vh - 18px);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;max-width:calc(100vw - 2 * var(--margen))}
 #inicio h1{margin:0 0 3vh;font-weight:400;letter-spacing:.01em;color:var(--texto)}
 #inicio .datos{margin:0;font-size:12px;letter-spacing:.09em;color:#fff}
+#inicio .datos.suelta{position:relative;white-space:nowrap}
+#inicio .datos.suelta span{position:absolute;left:0;top:0;line-height:1}
 #inicio .firma{position:absolute;left:0;right:0;bottom:calc(var(--margen) + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-size:12px;letter-spacing:.06em;color:var(--texto-suave)}
 /* la nube con todos los videos aparece recién al entrar */
 #campo{transition:opacity 1.6s ease}
@@ -193,7 +195,7 @@ button[aria-pressed="true"]{background:rgba(255,255,255,.2)}
 <div id="inicio" role="button" tabindex="0" aria-label="Entrar">
   <div class="rotulo">
     <h1 aria-label="lo recuerdo todo rojo, azul y verde"><span>lo recuerdo</span> <span>todo</span> <span>rojo,</span> <span>azul</span> <span>y verde</span></h1>
-    <p class="datos">Nueve videos de un archivo familiar</p>
+    <p class="datos">nueve videos de un archivo familiar</p>
     <span class="entrar">click para entrar</span>
   </div>
   <p class="firma">Pedro Segalerba, 2026</p>
@@ -565,6 +567,49 @@ inicio.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "
 inicio.focus();
 if (TACTIL) inicio.querySelector(".entrar").textContent = "tocá para entrar";
 
+// ===== Título y subtítulo: otra distribución cada vez que se carga la página =====
+// Las palabras van de izquierda a derecha, cada una a otra altura (como en la tapa). El conjunto queda centrado.
+const DISTRIBUCION = {
+  // caida: cuánto baja de la primera a la última palabra · vaiven: cuánto se mueve cada una alrededor de esa línea
+  titulo:    { aire: [0.3, 0.75], caida: [1.0, 2.0], vaiven: 0.5, minimo: 0.3 },   // en em del título
+  subtitulo: { aire: [0.5, 1.1],  caida: [0.4, 1.4], vaiven: 0.6, minimo: 0.35 },  // en em del subtítulo
+  anchoMax: 16.5,                                                         // si se pasa, se achica el aire
+};
+function distribuir(el, partes, cfg) {
+  const azar = (a, b) => a + Math.random() * (b - a);
+  el.textContent = ""; el.classList.add("suelta");
+  const spans = partes.map((t, i) => { const s = document.createElement("span"); s.textContent = t; el.appendChild(s); if (i < partes.length - 1) el.appendChild(document.createTextNode(" ")); return s; });
+  const fs = parseFloat(getComputedStyle(el).fontSize) || 16;
+  const anchos = spans.map(s => s.getBoundingClientRect().width / fs);
+  let aires = spans.map(() => azar(...cfg.aire)); aires[aires.length - 1] = 0;
+  const total = anchos.reduce((a, b) => a + b, 0) + aires.reduce((a, b) => a + b, 0);
+  if (total > DISTRIBUCION.anchoMax) aires = aires.map(a => a * Math.max(0.3, 1 - (total - DISTRIBUCION.anchoMax) / aires.reduce((a, b) => a + b, 0.001)));
+  // alturas: en general van bajando (como en la tapa; a veces subiendo), cada palabra un poco corrida de esa línea
+  const n = spans.length, caida = azar(...cfg.caida) * (Math.random() < 0.75 ? 1 : -1), ys = [];
+  for (let i = 0; i < n; i++) {
+    let y = caida * i / Math.max(1, n - 1) + azar(-cfg.vaiven, cfg.vaiven);
+    if (i > 0 && Math.abs(y - ys[i - 1]) < cfg.minimo) y = ys[i - 1] + (y >= ys[i - 1] ? cfg.minimo : -cfg.minimo);   // nunca dos a la misma altura
+    ys.push(y);
+  }
+  const min = Math.min(...ys); let x = 0;
+  spans.forEach((s, i) => { s.style.left = x.toFixed(3) + "em"; s.style.top = (ys[i] - min).toFixed(3) + "em"; x += anchos[i] + aires[i]; });
+  el.style.width = x.toFixed(3) + "em"; el.style.height = (Math.max(...ys) - min + 1.25).toFixed(3) + "em";
+}
+function distribuirRotulo() {
+  const h1 = document.querySelector("#inicio h1"), sub = document.querySelector("#inicio .datos");
+  if (h1) distribuir(h1, ["lo recuerdo", "todo", "rojo,", "azul", "y verde"], DISTRIBUCION.titulo);
+  if (sub) {   // el subtítulo en 3 o 4 tramos, cortados al azar
+    const CORTES = [["nueve videos", "de un archivo", "familiar"], ["nueve", "videos de un", "archivo familiar"],
+                    ["nueve videos", "de un", "archivo familiar"], ["nueve", "videos", "de un archivo", "familiar"],
+                    ["nueve videos de", "un archivo", "familiar"]];          // cortes que se leen bien
+    const tramos = sub.textContent.trim() === "nueve videos de un archivo familiar"
+      ? CORTES[Math.floor(Math.random() * CORTES.length)] : sub.textContent.trim().split(/\s+/);
+    distribuir(sub, tramos, DISTRIBUCION.subtitulo);
+  }
+}
+// se acomoda con la tipografía ya cargada (antes de que el efecto del título lea las posiciones)
+const rotuloListo = (document.fonts ? document.fonts.ready : Promise.resolve()).then(distribuirRotulo);
+
 // ===== Título con pixelado y aberración =====
 // Ajustes:
 const GLITCH = {
@@ -675,7 +720,7 @@ const GLITCH = {
     if (document.body.contains(cv)) raf = requestAnimationFrame(cuadro);
   }
 
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { preparar(); raf = requestAnimationFrame(cuadro); });
+  rotuloListo.then(() => { preparar(); raf = requestAnimationFrame(cuadro); });
   let tm; window.addEventListener("resize", () => { clearTimeout(tm); tm = setTimeout(() => { if (document.body.contains(h1)) preparar(); }, 150); });
 })();
 
